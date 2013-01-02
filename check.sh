@@ -224,17 +224,7 @@ if test -z "$NONINTERACTIVE"; then
 			echo "ok"
 		fi
 
-		echo -n "checking for false php close tags in source tree..."
-		found=`find . -name "*.php" -exec ./bin/wspace.php '{}' \;`
-		if test -n "$found"; then
-			echo "WARNING found false close tags in files:"
-			echo "$found"
-			echo ""
-		else
-			echo "ok"
-		fi
-
-		if -x ./phplint.php; then
+		if test -x ./phplint.php; then
 			echo -n "checking lintedness of all *.php files ... "
 			bad_files="$(find . -not -path './smarty/compile/*' -a -not -path './smarty/libs/*' -a -not -path './inc/pear/*' -a -not -path './inc/amazon/*' -a -name '*.php' -exec ./phplint.php {} +)"
 			if test -n "$bad_files"; then
