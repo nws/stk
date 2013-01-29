@@ -596,5 +596,67 @@ function scout() {
 	}
 }
 
+function stk_set_include_path($entry_point_path) {
+	$site_path = dirname(realpath($entry_point_path));
+	$stk_path = dirname(realpath(__FILE__));
+	define('SITE_PATH', rtrim($site_path, '/').'/');
+	define('STK_PATH', rtrim($stk_path, '/').'/');
 
+	$path_suffixes = array(
+		'.',
+		'inc/',
+		'inc/pear',
+		'lib',
+		'smarty',
+		'tiles',
+	);
 
+	$paths = array();
+	foreach (array($site_path, $stk_path) as $pfx) {
+		foreach ($path_suffixes as $ps) {
+			$paths[] = "$pfx/$ps";
+		}
+	}
+
+	ini_set('include_path', implode(':', $paths));
+}
+
+function stk_start_web($entry_point_path) {
+	set_time_limit(60);
+	error_reporting(E_ALL|E_STRICT);
+
+	stk_set_include_path($entry_point_path);
+
+	ini_set('session.bug_compat_warn', 'off');
+	ini_set('gd.jpeg_ignore_warning', 1);
+
+	return stk_bandwagon_web(array('site'), 2);
+}
+
+function stk_start_cli($entry_point_path) {
+	global $argc, $argv;
+
+	error_reporting(E_ALL|E_STRICT);
+
+	stk_set_include_path($entry_point_path);
+
+	ini_set('log_errors', 1);
+	ini_set('session.bug_compat_warn', 'off');
+	ini_set('gd.jpeg_ignore_warning', 1);
+
+	if ($argc < 2) {
+		die("cannot init stk, usage: run.php <tile> [args]\n");
+	}
+
+	if (!preg_match('|^tiles/(.*?)(?:\.php)?$|', $argv[1], $m)) {
+		die("{$argv[1]} looks bad\n");
+	}
+
+	array_shift($argv); // progname
+	array_shift($argv); // path
+
+	$path = $m[1];
+	$args = &$argv;
+
+	return stk_bandwagon_cli('site', $path, $args);
+}

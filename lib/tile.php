@@ -555,14 +555,34 @@ class t {
 			require_once "smarty/libs/Smarty.class.php";
 			$sm = new Smarty;
 			$sm->registerFilter('variable', 'escape_html');
-			if (isset(config::$smarty)) {
-				foreach (config::$smarty as $k => $v) {
-					if ($k == 'plugins_dir') {
-						$v = array(SMARTY_DIR.'plugins/', $v);
-					}
-					$sm->$k = $v;
+			$smarty_config = array(
+				'config_dir' => STK_PATH.'smarty/config',
+				'compile_dir' => SITE_PATH.'smarty_compile',
+				'template_dir' => array(
+					SITE_PATH.'tmpl',
+					STK_PATH.'tmpl',
+				),
+				'plugins_dir' => array(
+					SITE_PATH.'smarty/plugins',
+					STK_PATH.'smarty/plugins',
+					SMARTY_DIR.'plugins',
+				),
+			);
+
+			foreach ($smarty_config as $k => $v) {
+				$default_v = isset(config::$smarty[$k]) ? config::$smarty[$k] : null;
+				switch ($k) {
+				case 'template_dir':
+				case 'plugins_dir':
+					$v = array_merge((array)$v, (array)$default_v);
+					break;
+				default:
+					$v = $v !== null ? $v : $default_v;
+					break;
 				}
+				$sm->$k = $v;
 			}
+
 			$sm->assign('_stash', stash());
 			$sm->assign('_config', get_class_vars('config'));
 			foreach ($vars as $k => $v) {

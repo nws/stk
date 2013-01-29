@@ -76,10 +76,6 @@ class config {
 	static $default_tmpl_type = 'smarty';
 	// smarty config
 	static $smarty = array(
-		'config_dir' => 'smarty/config',
-		'compile_dir' => 'smarty/compile',
-		'template_dir' => 'tmpl',
-		'plugins_dir' => 'smarty/plugins',
 	);
 	// files to inc() before anything serious happens
 	static $inc = array(
