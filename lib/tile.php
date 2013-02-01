@@ -557,7 +557,7 @@ class t {
 			$sm->registerFilter('variable', 'escape_html');
 			$smarty_config = array(
 				'config_dir' => STK_PATH.'smarty/config',
-				'compile_dir' => SITE_PATH.'smarty_compile',
+				'compile_dir' => SITE_PATH.'smarty/compile',
 				'template_dir' => array(
 					SITE_PATH.'tmpl',
 					STK_PATH.'tmpl',

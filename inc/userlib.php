@@ -39,11 +39,7 @@ class userlib {
 	}
 
 	static function core_data($user_id) {
-		$user = models::get('user');
-		$u = $user->get_by_user_id($user_id);
-		if (!isset( $u['last_active_date'] ) || $u['last_active_date']!=date('Y-m-d'))
-			$user->update_last_active_date( $user_id );
-		return $u;
+		return m('user')->get_by_user_id($user_id);
 	}
 
 	static function bring_up() {
@@ -67,8 +63,11 @@ class userlib {
 
 		if ($persistent) {
 			setcookie(session_name(), session_id(), time()+config::$persistent_session_lifetime, '/', config::$cookie_domain);
-			models::get('session_store')->set_to_persistent(session_id());
+			m('session_store')->set_to_persistent(session_id());
 		}
+
+		// just logged in to see what condition my condition is in
+		m('user')->just_logged_in($user_id); 
 	}
 
 	static function logout() {
@@ -97,7 +96,8 @@ class userlib {
 
 		$r = stash()->roles;
 		$r->push();
-		$r->set('user'); // all logged in users are 'user'
+		$role = !empty($u['role']) ? $u['role'] : 'user';
+		$r->set($role);
 	}
 
 	static function remove_roles() {

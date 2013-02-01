@@ -73,6 +73,9 @@ class roles {
 
 	function pop() {
 		$this->roles = array_pop($this->role_stack);
+		if ($this->roles === null) {
+			$this->roles = array();
+		}
 	}
 }
 

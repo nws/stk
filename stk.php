@@ -47,6 +47,12 @@ function config($config) {
 		}
 		unset($u);
 	}
+	if (config::$baseurl === false) {
+		config::$baseurl = 'http://'.config::$host.'/';
+	}
+	if (config::$cookie_domain === false) {
+		config::$cookie_domain = '.'.config::$host;
+	}
 	inc(config::$inc);
 }
 
