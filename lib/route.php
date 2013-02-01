@@ -57,7 +57,7 @@ function _route_is_page($loc_path) {
 	if ($_route_cache) {
 		return isset($_route_cache[$path]);
 	}
-	return is_file($path);
+	return is_file_in($path, array(SITE_PATH, STK_PATH));
 }
 
 function _route_normalize_path($path = null) {
@@ -70,4 +70,13 @@ function _route_normalize_path($path = null) {
 	}
 	$path = trim($path, '/');
 	return config::$sitedir.implode('/', preg_split('|/+|', $path));
+}
+
+function is_file_in($path, $rootdirs) {
+	foreach ($rootdirs as $r) {
+		if (is_file($r.$path)) {
+			return true;
+		}
+	}
+	return false;
 }
