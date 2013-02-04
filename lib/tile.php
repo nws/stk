@@ -543,7 +543,7 @@ class t {
 			break;
 
 		case 'json':
-			header('Content-Type: text/javascript; charset=utf-8');
+			header('Content-Type: application/json; charset=utf-8');
 			return json_encode($vars);
 			break;
 		case 'xml':
