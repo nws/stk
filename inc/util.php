@@ -975,8 +975,10 @@ function array_flatten($array) {
 
 function emit_http_status($status_code) {
 	static $codes = array(
-		404 => 'Not Found',
 		400 => 'Bad Request',
+		404 => 'Not Found',
+		405 => 'Method Not Allowed',
+		409 => 'Conflict',
 	);
 
 	if (!isset($codes[ $status_code ])) {
