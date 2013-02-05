@@ -414,36 +414,7 @@ class t {
 		return $rv;
 	}
 
-	/* call $tile_name with $args and return the templated result
-	 * if $is_subcall is true, no groups are processed */
-	static function call($tile_name, $args = array(), $is_subcall = 0) {
-		//debug('t::call('.$tile_name.')');
-		if (isset(self::$top)) {
-			self::$top++;
-		} else {
-			self::$top = 0;
-		}
-
-		$tile_name = self::fix_target($tile_name);
-
-		self::$vars[self::$top] = array(
-			'tile_name' => $tile_name,
-			'vars' => array(),
-			'subcall' => null,
-			'self_display' => false,
-			'tmpl' => array(
-				'type' => null,
-				'target' => null,
-			),
-			'current_file' => null,
-			'args' => $args,
-			'fcache' => null,
-		);
-
-		// the default template becomes the fixed tile_name, as an absolute template ref
-		self::tmpl(config::$default_tmpl_type, '/'.$tile_name);
-
-
+	private static function _call($tile_name, $args = array(), $is_subcall = 0) {
 		// collect groups we havent processed yet
 		$group_names = self::collect_groups($tile_name);
 
@@ -484,12 +455,84 @@ class t {
 			self::fcache_put($result);
 		}
 
+
+		return $result;
+	}
+
+	static function replace_call($tile_name, $args = array(), $is_subcall = 0) {
+		if (!isset(self::$top)) {
+			self::$top = 0;
+		}
+
+		$tile_name = self::fix_target($tile_name);
+		self::init_tvars($tile_name, $args, false);
+		self::default_tmpl();
+
+		return self::_call($tile_name, $args, $is_subcall);
+	}
+
+	static function merge_call($tile_name, $args = array(), $is_subcall = 0) {
+		if (!isset(self::$top)) {
+			self::$top = 0;
+		}
+
+		$tile_name = self::fix_target($tile_name);
+		self::init_tvars($tile_name, $args, false);
+
+		return self::_call($tile_name, $args, $is_subcall);
+	}
+
+	/* call $tile_name with $args and return the templated result
+	 * if $is_subcall is true, no groups are processed */
+	static function call($tile_name, $args = array(), $is_subcall = 0) {
+		//debug('t::call('.$tile_name.')');
+		if (isset(self::$top)) {
+			self::$top++;
+		} else {
+			self::$top = 0;
+		}
+
+		// the default template becomes the fixed tile_name, as an absolute template ref
+
+		$tile_name = self::fix_target($tile_name);
+		self::init_tvars($tile_name, $args, true);
+
+		self::tmpl(config::$default_tmpl_type, '/'.$tile_name);
+
+		$result = self::_call($tile_name, $args, $is_subcall);
+
 		if (self::$top > 0) {
 			self::$vars[self::$top] = null;
 			self::$top--;
 		}
 
 		return $result;
+	}
+
+	static function default_tmpl() {
+		$tile_name = self::$vars[self::$top]['tile_name'];
+		self::tmpl(config::$default_tmpl_type, '/'.$tile_name);
+	}
+
+	private static function init_tvars($tile_name, $args, $replace = true) {
+		if (!$replace && isset(self::$vars[self::$top])) {
+			self::$vars[self::$top]['tile_name'] = $tile_name;
+			self::$vars[self::$top]['args'] = $args;
+			return;
+		}
+		self::$vars[self::$top] = array(
+			'tile_name' => $tile_name,
+			'vars' => array(),
+			'subcall' => null,
+			'self_display' => false,
+			'tmpl' => array(
+				'type' => null,
+				'target' => null,
+			),
+			'current_file' => null,
+			'args' => $args,
+			'fcache' => null,
+		);
 	}
 
 	private static function fn_exists($path, $is_group_tile) {
