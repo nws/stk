@@ -202,6 +202,9 @@ function stk_globals($page, $args) {
 }
 
 function stk_libs() {
+	lib('diag');
+	diag::setup();
+
 	lib(
 		'rewrite',
 		'url',
