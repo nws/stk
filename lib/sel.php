@@ -623,6 +623,28 @@ class sel {
 		return $rv[0];
 	}
 
+	public function exec_one_field($n = 0, $force = false) {
+		$result = $this->exec_one($force);
+		if (empty($result)) {
+			return null;
+		}
+
+		if (is_int($n)) {
+			$keys = array_keys($result);
+			if (!isset($keys[ $n ])) {
+				return null;
+			}
+			$k = $keys[$n];
+		}
+		else {
+			$k = $n;
+		}
+
+		return isset($result[ $k ])
+			? $result[ $k ]
+			: null;
+	}
+
 	public function slice($id, $count, $before = true, $idname = null) {
 		$cnt = $count+1;
 		$has_more = false;

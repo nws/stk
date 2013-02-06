@@ -24,7 +24,7 @@ class fi {
 	public static $ck = null; // current connection key
 
 	static $fis_error = array(0, '');
-	
+
 
 	public static function disconnect() {
 		self::$mysqli = array(); // dc all
@@ -297,6 +297,19 @@ class fi {
 			return $ret;
 		}
 	}
+
+	// call this to get a transaction object
+	// call commit() or rollback() on it when you're done
+	// if you dont call either of those, rollback() will be called at destruction
+	// these transactions work recursively, so and each commit only commits the innermost
+	// so go ahead, be brave.
+	static function txn() {
+		$oldck = self::$ck;
+		self::set_connection(); // switch to rw
+		$txn = new fitxn(self::$mysqli[self::$ck]);
+		self::set_connection($oldck); // switch back
+		return $txn;
+	}
 }
 
 class fis {
@@ -436,6 +449,42 @@ class fis {
 	}
 	public function free() {
 		$this->stmt->free_result();
+	}
+}
+
+class fitxn {
+	private $connection, $finalized;
+
+	public function __construct($connection) {
+		debug(__CLASS__.' start transaction');
+		$this->connection = $connection;
+		$this->finalized = false;
+
+		$this->connection->query("START TRANSACTION");
+	}
+
+	public function commit() {
+		if (!$this->finalized) {
+			debug(__CLASS__.' commit');
+			$this->connection->commit();
+			$this->finalized = true;
+		}
+	}
+
+	public function rollback() {
+		if (!$this->finalized) {
+			debug(__CLASS__.' rollback');
+			$this->connection->rollback();
+			$this->finalized = true;
+		}
+	}
+
+	public function __destruct() {
+		if (!$this->finalized) {
+			debug(__CLASS__.' rollback (automatic)');
+			$this->connection->rollback();
+			$this->finalized = true;
+		}
 	}
 }
 

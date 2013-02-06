@@ -10,6 +10,7 @@ class t {
 	static $top = null;
 	static $files_seen = array();
 	static $files_used = array();
+	static $continue = true;
 
 	static function setup() {
 	}
@@ -311,7 +312,7 @@ class t {
 	static function require_file($__g) {
 		$__fn = 'tiles/'.$__g.'.php';
 		self::_used_file($__fn);
-		require $__fn;
+		return require $__fn;
 	}
 
 	static function is_fcache_on() {
@@ -414,6 +415,10 @@ class t {
 		return $rv;
 	}
 
+	static function end_loop() {
+		self::$continue = false;
+	}
+
 	private static function _call($tile_name, $args = array(), $is_subcall = 0) {
 		// collect groups we havent processed yet
 		$group_names = self::collect_groups($tile_name);
@@ -429,15 +434,21 @@ class t {
 
 			list($g, $is_group_tile) = $group_names[$idx];
 
+			self::$continue = true;
+			$rv = null;
+
 			// XXX how to check if it's not a group
 			if ($fn = self::fn_exists($g, $is_group_tile)) {
 				self::$vars[self::$top]['current_file'] = $fn.'()';
 				//debug("t::call($tile_name): calling $fn");
-				$fn();
+				$rv = $fn();
 			} else {
 				self::$vars[self::$top]['current_file'] = $g;
 				//debug("t::call($tile_name): requiring $g");
-				self::require_file($g);
+				$rv = self::require_file($g);
+			}
+			if ($rv === false || !self::$continue) {
+				break;
 			}
 		}
 

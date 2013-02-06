@@ -20,16 +20,12 @@ class kv extends model {
 	}
 
 	// expiry is null or seconds from now
-	protected function set($key, $value, $expiry = null) {
+	protected function set($key, $value) {
 		$this->is_destructive(array('kv'));
 		$rec = array(
 			'kv_id' => $key, 
 			'value' => json_encode($value), 
 		);
-		if ($expiry !== null) {
-			$expiry = intval($expiry);
-			$rec['!expiry_dt'] = "DATE_ADD(NOW(), INTERVAL $expiry SECOND)";
-		}
 		return mod::replace('kv')
 			->values($rec)
 			->exec();
@@ -41,7 +37,6 @@ class kv extends model {
 		$value = sel::from('kv')
 			->fields('value')
 			->where('kv_id = ?', $key)
-			->where('expiry_dt IS NULL OR expiry_dt >= NOW()')
 			->exec_one();
 
 		if (!empty($value)) {
@@ -60,7 +55,6 @@ class kv extends model {
 		$values = sel::from('kv')
 			->fields('kv_id', 'value')
 			->where_keys('kv_id IN (?)', $keys, true)
-			->where('expiry_dt IS NULL OR expiry_dt >= NOW()')
 			->exec();
 		$values = make_hash($values, 'kv_id', 'value');
 		$return = array();
@@ -73,12 +67,6 @@ class kv extends model {
 			}
 		}
 		return $return;
-	}
-
-	protected function gc() {
-		return mod::delete('kv')
-			->where('expiry_dt < NOW()')
-			->exec();
 	}
 
 	protected function delete($k) {
