@@ -10,7 +10,6 @@ class t {
 	static $top = null;
 	static $files_seen = array();
 	static $files_used = array();
-	static $continue = true;
 
 	static function setup() {
 	}
@@ -415,40 +414,33 @@ class t {
 		return $rv;
 	}
 
-	static function end_loop() {
-		self::$continue = false;
-	}
-
 	private static function _call($tile_name, $args = array(), $is_subcall = 0) {
-		// collect groups we havent processed yet
-		$group_names = self::collect_groups($tile_name);
-
-		$grp_cnt = count($group_names);
-
-		for ($idx = $is_subcall; $idx < $grp_cnt; ++$idx) {
+		for ($idx = $is_subcall; isset(self::$vars[self::$top]['group_names'][$idx]); ++$idx) {
 			// if not the first tile, try for a subcall from the previous one
 			if ($idx != $is_subcall and self::$vars[self::$top]['subcall']) {
-				self::def(self::$vars[self::$top]['subcall'], self::call('/'.$tile_name, $args, $idx));
+				$tn = self::$vars[self::$top]['tile_name'];
+				$subcall_startidx = $idx;
+				if ($tn != $tile_name) {
+					$subcall_startidx = 0;
+				}
+				self::def(self::$vars[self::$top]['subcall'], self::call('/'.$tn, $args, $subcall_startidx));
 				break;
 			}
 
-			list($g, $is_group_tile) = $group_names[$idx];
+			list($g, $is_group_tile) = self::$vars[self::$top]['group_names'][$idx];
 
-			self::$continue = true;
-			$rv = null;
-
-			// XXX how to check if it's not a group
 			if ($fn = self::fn_exists($g, $is_group_tile)) {
 				self::$vars[self::$top]['current_file'] = $fn.'()';
-				//debug("t::call($tile_name): calling $fn");
-				$rv = $fn();
-			} else {
-				self::$vars[self::$top]['current_file'] = $g;
-				//debug("t::call($tile_name): requiring $g");
-				$rv = self::require_file($g);
+				$fn();
 			}
-			if ($rv === false || !self::$continue) {
-				break;
+			else {
+				self::$vars[self::$top]['current_file'] = $g;
+				self::require_file($g);
+			}
+
+			list($after_g) = self::$vars[self::$top]['group_names'][$idx];
+			if (!$is_group_tile && $after_g != $g) {
+				$idx--; // go another round
 			}
 		}
 
@@ -466,37 +458,25 @@ class t {
 			self::fcache_put($result);
 		}
 
-
 		return $result;
 	}
 
-	static function replace_call($tile_name, $args = array(), $is_subcall = 0) {
-		if (!isset(self::$top)) {
-			self::$top = 0;
+	static function replace_tile($tile_name, $args = null) {
+		$last_idx = count(self::$vars[self::$top]['group_names'])-1;
+		if ($last_idx >= 0) {
+			$tile_name = self::fix_target($tile_name);
+			self::$vars[self::$top]['group_names'][$last_idx] = array($tile_name, false);
+			self::$vars[self::$top]['tile_name'] = $tile_name;
+			self::default_tmpl();
+			if ($args !== null) {
+				self::$vars[self::$top]['args'] = $args;
+			}
 		}
-
-		$tile_name = self::fix_target($tile_name);
-		self::init_tvars($tile_name, $args, false);
-		self::default_tmpl();
-
-		return self::_call($tile_name, $args, $is_subcall);
-	}
-
-	static function merge_call($tile_name, $args = array(), $is_subcall = 0) {
-		if (!isset(self::$top)) {
-			self::$top = 0;
-		}
-
-		$tile_name = self::fix_target($tile_name);
-		self::init_tvars($tile_name, $args, false);
-
-		return self::_call($tile_name, $args, $is_subcall);
 	}
 
 	/* call $tile_name with $args and return the templated result
 	 * if $is_subcall is true, no groups are processed */
 	static function call($tile_name, $args = array(), $is_subcall = 0) {
-		//debug('t::call('.$tile_name.')');
 		if (isset(self::$top)) {
 			self::$top++;
 		} else {
@@ -521,8 +501,10 @@ class t {
 	}
 
 	static function default_tmpl() {
-		$tile_name = self::$vars[self::$top]['tile_name'];
-		self::tmpl(config::$default_tmpl_type, '/'.$tile_name);
+		if (!isset(self::$vars[self::$top]['subcall'])) {
+			$tile_name = self::$vars[self::$top]['tile_name'];
+			self::tmpl(config::$default_tmpl_type, '/'.$tile_name);
+		}
 	}
 
 	private static function init_tvars($tile_name, $args, $replace = true) {
@@ -533,6 +515,7 @@ class t {
 		}
 		self::$vars[self::$top] = array(
 			'tile_name' => $tile_name,
+			'group_names' => self::collect_groups($tile_name),
 			'vars' => array(),
 			'subcall' => null,
 			'self_display' => false,
