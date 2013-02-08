@@ -361,6 +361,13 @@ class model {
 	function main_clear_cache_on($tables) {
 		$this->is_destructive($tables);
 	}
+
+	function escape_like($s) {
+		return strtr($s, array(
+			'_' => '\\_',
+			'%' => '\\%',
+		));
+	}
 }
 
 // this class implements the trickle-up stack... whatever that is :)
