@@ -15,7 +15,7 @@ class mod {
 	private $args = array();
 	private $order_by;
 
-	private $on_duplicate_update = false;
+	private $on_duplicate_update = null;
 
 	private $update_external = array();
 
@@ -47,10 +47,11 @@ class mod {
 	static function replace($table, $options = array()) {
 		return new self('replace', $table, $options);
 	}
-
-	public function on_duplicate_update() {
-		$this->on_duplicate_update = true;
-		return $this;	
+	// can be array of values to update
+	// or true, in which case we reuse the insert's values
+	public function on_duplicate_update($update_values = true) {
+		$this->on_duplicate_update = $update_values;
+		return $this;
 	}
 
 	public function silence_duplicate_key_warnings() {
@@ -183,19 +184,37 @@ class mod {
 	   	else if ($this->mode != 'update' and !empty($this->update_external)) {
 			trigger_error('mod::'.$this->mode.' called with complex fieldnames', E_USER_ERROR);
 		}
-	   	else if ($this->mode != 'update' and $this->order_by !== null) {
+		else if ($this->mode != 'update' and $this->order_by !== null) {
 			trigger_error('mod::'.$this->mode.' called with order_by', E_USER_ERROR);
 		}
-	   	else if ($this->mode != 'insert' and $this->on_duplicate_update == true) {
+		else if ($this->mode != 'insert' and $this->on_duplicate_update !== null) {
 			trigger_error('mod::'.$this->mode.' called with on_duplicate_update', E_USER_ERROR);
 		}
 		else if ($this->mode == 'update' && count($this->values) > 1) {
 			trigger_error('mod::'.$this->mode.' called with multiple values', E_USER_ERROR);
 		}
-		else if ($this->mode == 'insert' && $this->on_duplicate_update == true && count($this->values) > 1) {
+		else if ($this->mode == 'insert' && $this->on_duplicate_update !== null && count($this->values) > 1) {
 			trigger_error('mod::'.$this->mode.' called with multiple values and on_duplicate_update', E_USER_ERROR);
 		}
 	}
+
+	private function to_sql_set($values) {
+		$args = $set = array();
+		foreach ($values as $fld => $val) {
+			if ($fld[0] == '!') {
+				$fld = substr($fld, 1);
+				$set[] = "`$fld` = $val";
+			}
+			else {
+				$set[] = "`$fld` = ?";
+				$args[] = $val;
+			}
+		}
+		$set = implode(',', $set);
+
+		return array($set, $args);
+	}
+
 	/*
 	 * insert into table set f=v,f2=v2
 	 * update table set f=v,f2=v2 where quux = 1
@@ -228,19 +247,9 @@ class mod {
 			$set = ''; // fuck dynamic scope
 			if ($values_count > 0) {
 				if ($this->mode == 'update' || $values_count == 1) {
-					$set = array();
-					foreach ($this->values[0] as $fld => $val) {
-						if ($fld[0] == '!') {
-							$fld = substr($fld, 1);
-							$set[] = "`$fld` = $val";
-						} 
-						else {
-							$set[] = "`$fld` = ?";
-							$args[] = $val;
-						}
-					}
-					$set = implode(',', $set);
-					$q .= ' SET '.$set;
+					list($set, $_args) = $this->to_sql_set($this->values[0]);
+					$q .= "SET $set";
+					$args = array_merge($args, $_args);
 					$values_start = 1; // special case, we'll exit at the bottom now
 				}
 				else {
@@ -290,9 +299,17 @@ class mod {
 				$q .= ' LIMIT '.$this->limit;
 			}
 
-			if ($this->on_duplicate_update) {
-				$q .= ' ON DUPLICATE KEY UPDATE '.$set;
-				$args = array_merge($args, $args);
+			if ($this->on_duplicate_update !== null) {
+
+				if (is_array($this->on_duplicate_update)) {
+					list($_set, $_args) = $this->to_sql_set($this->on_duplicate_update);
+				}
+				else {
+					$_set = $set;
+					$_args = $args;
+				}
+				$q .= ' ON DUPLICATE KEY UPDATE '.$_set;
+				$args = array_merge($args, $_args);
 			}
 
 			$this->completed_queries[] = $q;
