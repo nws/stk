@@ -5,12 +5,21 @@ class diag {
 	static $original_memory_limit;
 
 	static $fatal_errors = array( // if true, it is fatal
-		E_ERROR => true,
-		E_PARSE => true,
-		E_CORE_ERROR => true,
 		E_COMPILE_ERROR => true,
+		E_COMPILE_WARNING => true,
+		E_CORE_ERROR => true,
+		E_CORE_WARNING => true,
+		E_DEPRECATED => true,
+		E_ERROR => true,
+		E_NOTICE => true,
+		E_PARSE => true,
+		E_RECOVERABLE_ERROR => true,
+		E_STRICT => true,
+		E_USER_DEPRECATED => true,
 		E_USER_ERROR => true,
-		E_RECOVERABLE_ERROR  => true,
+		E_USER_NOTICE => true,
+		E_USER_WARNING => true,
+		E_WARNING => true,
 	);
 
 	static $errors = array(
