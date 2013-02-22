@@ -1,0 +1,5 @@
+#!/usr/bin/env php
+<?php
+require 'stk/stk.php';
+
+stk_start_cli(__FILE__);
