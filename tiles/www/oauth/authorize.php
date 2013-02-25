@@ -21,7 +21,7 @@ if ($service_data['login_service'] === false and !userlib::is_logged_in()) {
 	redirect('user');
 }
 
-if (!is_bool($service_data['login_service'])) {
+if ($service_data['login_service'] !== null && !is_bool($service_data['login_service'])) {
 	inc($service);
 	if (!call_user_func(array($service, $service_data['login_service']), 'authorize')) {
 		set_message('Please log in first');

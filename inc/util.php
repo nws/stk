@@ -70,23 +70,6 @@ function html2text($html) {
 	return $text;
 }
 
-function ensure_exclusive_run($lock_file, $timeout) {
-	$now = time();
-	if (file_exists($lock_file)) {
-		$been_running_for_secs = $now - filemtime($lock_file);
-		if ($been_running_for_secs > $timeout) {
-			if (unlink($lock_file)) {
-				return ensure_exclusive_run($lock_file, $timeout);
-			}
-		}
-		return false;
-	}
-	if (touch($lock_file)) {
-		return true;
-	}
-	return false;
-}
-
 // if headers === null, just continue pushing lines
 // might be necessary for huge datasets (pager, keep calling this)
 function push_csv($filename, $headers = null, $records) {
@@ -639,6 +622,88 @@ function bitly($url) {
 	}
 }
 
+function curl_rq($url, $data = array(), $params = array()) {
+	$params += array(
+		'connect_timeout' => 20,
+		'timeout' => 20,
+		'curl_opts' => array(),
+		'method' => 'GET',
+		'follow_redir' => false,
+		'headers' => array(),
+	);
+
+	$ch = curl_init();
+
+	debug("curl {$params['method']} $url: ".json_encode($data));
+
+	if ($params['method'] == 'GET') {
+		$url .= (strpos($url, '?') === false ? '?' : '&') 
+			. http_build_query($data, null, '&');
+	}
+	else {
+		curl_setopt($ch, CURLOPT_POST, true);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $params['method']);
+	}
+
+	curl_setopt($ch, CURLOPT_URL, $url);
+	curl_setopt($ch, CURLOPT_HEADER, true);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $params['connect_timeout']);
+	curl_setopt($ch, CURLOPT_TIMEOUT, $params['timeout']);
+	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, $params['follow_redir']);
+
+	if (!empty($params['headers'])) {
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $params['headers']);
+	}
+
+	if (!empty($params['curl_opts'])) {
+		curl_setopt_array($ch, $params['curl_opts']);
+	}
+
+	$str = curl_exec($ch);
+
+	if ($str === false) {
+		debug("curl Error: ".curl_errno($ch) . " - " . curl_error($ch));
+		return null;
+	}
+
+	$more_headers = true;
+	while (strpos($str, 'HTTP/') === 0 && $more_headers) {
+		$more_headers = false;
+		list($hdrs, $str) = explode("\r\n\r\n", $str, 2);
+		$hdrs = explode("\r\n", $hdrs);
+		array_shift($hdrs);
+		$headers = array();
+		foreach ($hdrs as $l) {
+			list($k, $v) = explode(': ', $l);
+			$headers[strtr(strtoupper($k), '-', '_')] = $v;
+			if ($params['follow_redir'] && $k == 'Location') {
+				$more_headers = true;
+			}
+		}
+	}
+
+	$code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+	debug('curl result code = '.$code);
+
+	$decoded_content = null;
+	if (isset($params['response_decode'])) {
+		switch ($params['response_decode']) {
+		case 'json':
+			$decoded_content = @json_decode($str, true);
+			break;
+		}
+	}
+
+	return (object)array(
+		'status' => $code,
+		'headers' => $headers,
+		'content' => $str,
+		'decoded_content' => $decoded_content,
+	);
+}
+
 function curl_get($url, $headers = array(),$userpw='', $follow_redir = false, $curl_opts = null, $extended = false) {
 	$ch = curl_init();
 	if ($extended) {
@@ -694,6 +759,34 @@ function curl_get($url, $headers = array(),$userpw='', $follow_redir = false, $c
 	else {
 		return $str;
 	}
+}
+
+function curl_post($url, $data, $headers = array(),$userpw='', $method = 'POST') {
+	$ch = curl_init();
+
+	debug("curl POSTing to $url", $data);
+	curl_setopt($ch, CURLOPT_URL, $url);
+	curl_setopt($ch, CURLOPT_POST, true);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 20);
+	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+	if ($userpw) {
+		curl_setopt($ch, CURLOPT_USERPWD, $userpw);
+	}
+
+	$headers[] = 'Accept-Language: en-us';
+	if (!empty($headers)) {
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+	}
+	$str = curl_exec($ch);
+
+	if (!$str) {
+		debug("curl Error: $url: ".curl_errno($ch) . " - " . curl_error($ch));
+		return false;
+	}
+	
+	return $str;
 }
 
 function older_than($year, $dob) {

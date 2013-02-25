@@ -194,7 +194,7 @@ class mod {
 			trigger_error('mod::'.$this->mode.' called with multiple values', E_USER_ERROR);
 		}
 		else if ($this->mode == 'insert' && $this->on_duplicate_update !== null && count($this->values) > 1) {
-			trigger_error('mod::'.$this->mode.' called with multiple values and on_duplicate_update', E_USER_ERROR);
+			//trigger_error('mod::'.$this->mode.' called with multiple values and on_duplicate_update', E_USER_ERROR);
 		}
 	}
 

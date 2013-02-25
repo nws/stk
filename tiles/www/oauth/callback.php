@@ -23,7 +23,7 @@ if (isset($service_data['service_class'])) {
 	$service_class = $service_data['service_class'];
 }
 
-if (!method_exists($service_class, 'get_username')) {
+if ($service_data['login_service'] !== null && !method_exists($service_class, 'get_username')) {
 	set_message('invalid service passed', 0);
 	redirect_now();
 }
@@ -33,13 +33,14 @@ if ($service_data['login_service'] === false and !userlib::is_logged_in()) {
 	redirect('user');
 }
 
-if (!is_bool($service_data['login_service'])) {
+if ($service_data['login_service'] !== null && !is_bool($service_data['login_service'])) {
 	if (!call_user_func(array($service, $service_data['login_service']), 'callback')) {
 		set_message('Please log in first');
 		redirect('user');
 	}
 }
 
+$reply = null;
 if ($service_data['version'] == 1) {
 	if (!isset(session()->oauth['token']) or !isset($_GET['oauth_token']) or $_GET['oauth_token'] != session()->oauth['token']) {
 		set_message('bad oauth token', 0);
@@ -130,14 +131,17 @@ else {
 
 // got tokens...
 
-// get their remote uid
-$args = array($token);
-if ($secret !== null) {
-	$args[] = $secret;
+$username = $remote_user_id = null;
+if ($service_data['login_service'] !== null) {
+	// get their remote uid
+	$args = array($token);
+	if ($secret !== null) {
+		$args[] = $secret;
+	}
+	$u = call_user_func_array(array($service_class, 'get_username'), $args);
+	$username = $u['name'];
+	$remote_user_id = $u['user_id'];
 }
-$u = call_user_func_array(array($service_class, 'get_username'), $args);
-$username = $u['name'];
-$remote_user_id = $u['user_id'];
 
 // set the tokens, redirect, etc
 
@@ -193,8 +197,15 @@ else if ($service_data['login_service'] and $remote_user_id) { // login_service 
 		redirect($service_data['register_redirect']);
 	}
 }
-else {
-	// we are fucked
+else if ($service_data['login_service'] === null) {
+	// login_service === null
+	m('kv')->set($service.'_oauth_data', $reply);
+	if (!empty($reply['access_token']) && !empty($reply['refresh_token'])) {
+		m('kv')->set($service.'_access_token', $reply['access_token']);
+	}
+	else {
+		m('kv')->delete($service.'_access_token');
+	}
 }
 
 if ($freshconnect) {
