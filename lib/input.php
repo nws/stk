@@ -158,6 +158,15 @@ class input {
 					}
 					$val[$field] = $_v;
 				}
+			} else if (is_object($rule) && is_callable($rule)) {
+				$v = @self::$input_var[$field];
+				$rv = $rule($v);
+				if ($rv === true) {
+					$val[$field] = $v;
+				}
+				else {
+					$has[$field] = $rv;
+				}
 			} else {
 				if (is_callable($rule) || !is_array($rule[0])) {
 					// only one rule given, convert
@@ -165,6 +174,7 @@ class input {
 				}
 
 				$v = @self::$input_var[$field];
+				$add_field = true;
 				
 				foreach ($rule as $r) {
 					$is_callable = is_callable($r);
@@ -189,6 +199,7 @@ class input {
 					else if ($type === self::rule_filter) {
 						if ($rv !== true) {
 							$has[$field] = $rv;
+							$add_field = false;
 						}
 					} 
 					else if ($type === self::rule_mangle) {
@@ -201,7 +212,9 @@ class input {
 				if (self::$do_htmlentities) {
 					$v = html_escape($v);
 				} 
-				$val[$field] = $v;
+				if ($add_field) {
+					$val[$field] = $v;
+				}
 			}
 		}
 		if ($var !== null) {

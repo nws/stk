@@ -23,3 +23,14 @@ function filter_is_array($val) {
         }
         return 'not an array';
 }
+function filter_is_date($val, $formats) {
+	$result = null;
+	foreach ((array)$formats as $fmt) {
+		if ($result = strptime((string)$val, $fmt)) {
+			break;
+		}
+	}
+	return $result
+		? true
+		: "$val does not match any of ".implode(', ', (array)$formats);
+}
