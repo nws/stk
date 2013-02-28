@@ -34,3 +34,24 @@ function filter_is_date($val, $formats) {
 		? true
 		: "$val does not match any of ".implode(', ', (array)$formats);
 }
+
+function mangle_int_between($int, $floor, $ceil) {
+	input::do_htmlentities(false);
+	$int = intval($int);
+	$floor = intval($floor);
+	$ceil = intval($ceil);
+
+	if ($ceil < $floor) {
+		error('ceiling < floor');
+	}
+
+	if ($int < $floor) {
+		return $floor;
+	}
+	if ($int > $ceil) {
+		return $ceil;
+	}
+	return $int;
+}
+
+
