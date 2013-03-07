@@ -226,7 +226,8 @@ function stk_libs() {
 		'input',
 		'img',
 		'video',
-		'apc-compat'
+		'apc-compat',
+		'fc'
 	);
 	debug_usage('post lib()');
 }

@@ -16,7 +16,7 @@ OK_PHP_VERSION = $(FAKE_TARGET_DIR).ok-php-version
 WANT_PHP_VERSION = 5.3.0
 
 OK_PHP_MODULES = $(FAKE_TARGET_DIR).ok-php-modules
-WANT_PHP_MODULES = curl mysqli gd
+WANT_PHP_MODULES = curl mysqli gd apc
 HELPER_PHP_MOD_LOADED = if (!extension_loaded($$argv[1])) { echo "ERROR: missing module {$$argv[1]}\n"; exit(1); }
 
 OK_BADSTRINGS_PHP = $(FAKE_TARGET_DIR).ok-badstrings-php
@@ -24,17 +24,12 @@ OK_BADSTRINGS_TPL = $(FAKE_TARGET_DIR).ok-badstrings-tpl
 OK_BADSTRINGS_MODELS = $(FAKE_TARGET_DIR).ok-badstrings-models
 OK_BADSTRINGS_TILES = $(FAKE_TARGET_DIR).ok-badstrings-tiles
 
-HELPER_FIND_STRING_IN_CODE = \
-if [ -n "$(1)" ]; then \
-	found="$$(find $(1) -exec grep -q -- '$(2)' {} \; -a -not -exec grep -q '//!allow $(2)' {} \; -print)"; \
-else \
-	found=""; \
-fi; \
-if [ -n "$$found" ]; then \
-	echo "ERROR: $(2) in:"; \
-	echo $$found; \
-	exit 1; \
-fi
+HELPER_FIND_STRING_IN_CODE = found="$$(find $(1) -exec grep -q -- '$(2)' {} \; -a -not -exec grep -q '//!allow $(2)' {} \; -print)"; \
+	if [ -n "$$found" ]; then \
+		echo "ERROR: $(2) in:"; \
+		echo $$found; \
+		exit 1; \
+	fi
 
 ALL_PHP_DIRS = tiles cfg inc models *.php
 ALL_PHP = $(shell find $(ALL_PHP_DIRS) -name '*.php')
