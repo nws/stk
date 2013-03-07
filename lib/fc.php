@@ -17,6 +17,16 @@ class fc {
 			return;
 		}
 		$fn = self::filename($store, $key);
+		$wrap = array(
+			'value' => $value,
+			'time' => time(),
+		);
+		file_put_contents($fn, serialize($wrap));
+	}
+
+	static function filename($store, $key) {
+		$fn = config::$fcache_dir.$store.'/'.md5(json_encode($key)).'.s';
+
 		$dir = dirname($fn);
 		if (!is_dir($dir)) {
 			if (!is_dir(config::$fcache_dir)) {
@@ -26,14 +36,7 @@ class fc {
 			@mkdir($dir);
 			@chmod($dir, 0777);
 		}
-		$wrap = array(
-			'value' => $value,
-			'time' => time(),
-		);
-		file_put_contents($fn, serialize($wrap));
-	}
 
-	static function filename($store, $key) {
-		return config::$fcache_dir.$store.'/'.md5(json_encode($key)).'.s';
+		return $fn;
 	}
 }
