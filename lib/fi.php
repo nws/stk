@@ -303,10 +303,10 @@ class fi {
 	// if you dont call either of those, rollback() will be called at destruction
 	// these transactions work recursively, so and each commit only commits the innermost
 	// so go ahead, be brave.
-	static function txn() {
+	static function txn($label = '') {
 		$oldck = self::$ck;
 		self::set_connection(); // switch to rw
-		$txn = new fitxn(self::$mysqli[self::$ck]);
+		$txn = new fitxn(self::$mysqli[self::$ck], array('label' => $label));
 		self::set_connection($oldck); // switch back
 		return $txn;
 	}
@@ -453,19 +453,22 @@ class fis {
 }
 
 class fitxn {
-	private $connection, $finalized;
+	private $connection, $finalized, $label;
 
-	public function __construct($connection) {
-		debug(__CLASS__.' start transaction');
+	public function __construct($connection, $params) {
 		$this->connection = $connection;
 		$this->finalized = false;
+
+		$this->label = isset($params['label']) ? ' ('.$params['label'].')': '';
+
+		debug(__CLASS__.$this->label.' start transaction');
 
 		$this->connection->query("START TRANSACTION");
 	}
 
 	public function commit() {
 		if (!$this->finalized) {
-			debug(__CLASS__.' commit');
+			debug(__CLASS__.$this->label.' commit');
 			$this->connection->commit();
 			$this->finalized = true;
 		}
@@ -473,7 +476,7 @@ class fitxn {
 
 	public function rollback() {
 		if (!$this->finalized) {
-			debug(__CLASS__.' rollback');
+			debug(__CLASS__.$this->label.' rollback');
 			$this->connection->rollback();
 			$this->finalized = true;
 		}
@@ -481,7 +484,7 @@ class fitxn {
 
 	public function __destruct() {
 		if (!$this->finalized) {
-			debug(__CLASS__.' rollback (automatic)');
+			debug(__CLASS__.$this->label.' rollback (automatic)');
 			$this->connection->rollback();
 			$this->finalized = true;
 		}

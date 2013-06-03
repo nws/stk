@@ -392,7 +392,9 @@ class mod {
 			}
 		}
 		mod_wtables::add($this->table);
-		return $rv;
+		return $rv === 0
+			? '0E0'
+			: $rv;
 	}
 
 	public function destroy() {
