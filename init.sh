@@ -16,4 +16,4 @@ mkdir tiles
 mkdir tiles/www
 mkdir tiles/scripts
 mkdir -p tmpl/www
-
+mkdir misc
