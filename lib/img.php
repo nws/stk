@@ -67,11 +67,6 @@ class img {
 
 	static function store_img_internal($type, $store_method, $file_struct, $size = null) {
 		$call_store_method = $store_method;
-		if (config::$use_internal_image_api 
-			&& in_array($store_method, array('temp', 'local'))) 
-		{
-			$call_store_method = config::$use_internal_image_api;
-		}
 
 		$hlpm = '_store_img_'.$call_store_method;	
 		if (!method_exists(__CLASS__, $hlpm)) {
@@ -254,9 +249,6 @@ class img {
 		list($type, $store_method, $key) = explode(':', $file_key, 3);
 
 		$call_store_method = $store_method;
-		if (config::$use_internal_image_api) {
-			$call_store_method = config::$use_internal_image_api;
-		}
 
 		$hlpm = '_get_bytes_'.$call_store_method;
 		if (!method_exists(__CLASS__, $hlpm)) {

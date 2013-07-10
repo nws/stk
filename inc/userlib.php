@@ -65,9 +65,6 @@ class userlib {
 			setcookie(session_name(), session_id(), time()+config::$persistent_session_lifetime, '/', config::$cookie_domain);
 			m('session_store')->set_to_persistent(session_id());
 		}
-
-		// just logged in to see what condition my condition is in
-		m('user')->just_logged_in($user_id); 
 	}
 
 	static function logout() {

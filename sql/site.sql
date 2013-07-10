@@ -6,11 +6,10 @@ create table if not exists `user` (
 	`name` varchar(255) not null,
 	`first_name` varchar(255) not null,
 	`last_name` varchar(255) not null,
-	`last_active_date` date not null,
-	`birth_dt` date not null,
+	`birth_dt` date null,
 	`register_dt` datetime not null,
 	`update_dt` datetime not null,
-	`zip` varchar(255) not null,
+	`zip` varchar(255) null,
 	unique(`email`),
 	primary key(`user_id`)
 ) charset=utf8 engine=innodb;

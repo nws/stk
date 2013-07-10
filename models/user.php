@@ -21,14 +21,6 @@ class user extends model {
 		return false;
 	}
 
-	protected function just_logged_in($user_id) {
-		$this->is_destructive(array('user'));
-		return mod::update('user')
-			->values(array('!last_login_dt' => 'NOW()'))
-			->where('user_id = ?', $user_id)
-			->exec();
-	}
-
 	protected function create($rec) {
 		$this->is_destructive(array('user'));
 		if (isset($rec['password'])) {
@@ -69,12 +61,9 @@ class user extends model {
 		$rec = sel::from('user')
 			->fields(array(
 				'user_id',
-				'login',
 				'name',
 				'register_dt',
 				'update_dt',
-				'last_login_dt',
-				'role',
 			))
 			->where('user_id = ?', $user_id)
 			->exec_one();
@@ -93,5 +82,13 @@ class user extends model {
 			->fields()
 			->where('user_id = ?', $user_id)
 			->count();
+	}
+
+	protected function get_user_id_by_email($email) {
+		$this->used_tables(array('user'));
+		return sel::from('user')
+			->fields()
+			->where('email = ?', $email)
+			->exec_one_field();
 	}
 }

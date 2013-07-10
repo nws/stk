@@ -171,6 +171,8 @@ class Facebook
 	 */
 	protected $fileUploadSupport = false;
 
+	private $user_access_token;
+
 	/**
 	 * Initialize a Facebook Application.
 	 *
@@ -194,6 +196,9 @@ class Facebook
 		}
 		if (isset($config['fileUpload'])) {
 			$this->setFileUploadSupport($config['fileUpload']);
+		}
+		if (isset($config['user_access_token'])) {
+			$this->user_access_token = $config['user_access_token'];
 		}
 	}
 
@@ -962,12 +967,25 @@ class Facebook
 	}
 
 	// STK hacks
-	public static function connect() {
+	public static function connect($access_token = null) {
+		if ($access_token === null) {
+			$access_token = stkoauth::get_token('facebook');
+		}
+
 		$f = new self(array(
 			'appId'  => config::$oauth_services['facebook']['key'],
 			'secret' => config::$oauth_services['facebook']['secret'],
+			'user_access_token' => $access_token,
 		));
 		return $f;
+	}
+
+	public function aapi(/* polymorphic */) {
+		$args = func_get_args();
+		if (!isset($args[2]['access_token']) && isset($this->user_access_token)) {
+			$args[2]['access_token'] = $this->user_access_token;
+		}
+		return call_user_func_array(array($this, 'api'), $args);
 	}
 
 	public static function get_username($token, $secret = null) {
@@ -984,7 +1002,10 @@ class Facebook
 		}
 	}
 
-	public static function get_profile_pic($fbuid) {
+	public static function get_profile_pic($fbuid = null) {
+		if ($fbuid === null) {
+			$fbuid = stkoauth::get_remote_uid('facebook');
+		}
 		return 'https://graph.facebook.com/'.$fbuid.'/picture?type=large';
 	}
 
