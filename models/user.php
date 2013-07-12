@@ -56,6 +56,26 @@ class user extends model {
 		return $rv;
 	}
 
+	protected function get_profile_by_user_id($user_id) {
+		$this->used_tables(array('user'));
+		$rec = sel::from('user')
+			->fields(array(
+				'user_id',
+				'name',
+				'register_dt',
+				'update_dt',
+				'email',
+				'picture',
+				'first_name',
+				'last_name',
+				'birth_dt',
+				'zip',
+			))
+			->where('user_id = ?', $user_id)
+			->exec_one();
+		return $rec;
+	}
+
 	protected function get_by_user_id($user_id) {
 		$this->used_tables(array('user'));
 		$rec = sel::from('user')
