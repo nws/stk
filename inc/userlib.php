@@ -46,6 +46,7 @@ class userlib {
 		if (session()->user_id > 0) {
 			stash()->user_id = session()->user_id;
 			stash()->user = self::core_data(stash()->user_id);
+			stkoauth::init(stash()->user_id);
 			self::init_roles();
 		}
 	}
@@ -59,6 +60,7 @@ class userlib {
 		stash()->user_id = $user_id;
 		session()->user_id = $user_id;
 		stash()->user = $core;
+		stkoauth::init($user_id);
 		self::init_roles();
 
 		if ($persistent) {
