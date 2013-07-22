@@ -4,7 +4,7 @@
 # crontab check
 # db diff
 
-.PHONY: default clean
+.PHONY: default clean ALWAYS
 
 FAKE_TARGET_DIR = misc/
 
@@ -39,7 +39,7 @@ ALL_TILES = $(shell find tiles -name '*.php')
 
 HELPER_XARGS = echo $(1) | tr ' ' '\n' | xargs -l1 $(2) 
 
-default: $(OK_PHP_L) $(OK_PHPLINT) $(OK_PHP_VERSION) $(OK_PHP_MODULES) $(OK_BADSTRINGS_PHP) $(OK_BADSTRINGS_TPL) $(OK_BADSTRINGS_MODELS) $(OK_BADSTRINGS_TILES)
+default: ALWAYS $(OK_PHP_L) $(OK_PHPLINT) $(OK_PHP_VERSION) $(OK_PHP_MODULES) $(OK_BADSTRINGS_PHP) $(OK_BADSTRINGS_TPL) $(OK_BADSTRINGS_MODELS) $(OK_BADSTRINGS_TILES)
 
 $(OK_PHP_L): $(ALL_PHP)
 	@$(call HELPER_XARGS,$?,php -l) && touch $(OK_PHP_L)
@@ -73,6 +73,10 @@ $(OK_BADSTRINGS_TILES): $(ALL_TILES)
 	@$(call HELPER_FIND_STRING_IN_CODE,$?,mod::) \
 		&& $(call HELPER_FIND_STRING_IN_CODE,$?,sel::) \
 		&& touch $(OK_BADSTRINGS_TILES)
+
+ALWAYS:
+	@[ -d misc -a -r misc -a -w misc -a -x misc ] || mkdir misc
+	@[ -d smarty/compile -a -r smarty/compile -a -w smarty/compile -a -x smarty/compile ] || mkdir -p smarty/compile && chmod 777 smarty/compile
 
 clean:
 	touch -d @0 $(OK_PHP_L) $(OK_PHPLINT) $(OK_PHP_VERSION) $(OK_PHP_MODULES) $(OK_BADSTRINGS_PHP) $(OK_BADSTRINGS_TPL) $(OK_BADSTRINGS_MODELS) $(OK_BADSTRINGS_TILES)
