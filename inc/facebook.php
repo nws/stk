@@ -164,6 +164,11 @@ class Facebook
 	/**
 	 * Base domain for the Cookie.
 	 */
+	protected $app_namespace = '';
+
+	/**
+	 * Base domain for the Cookie.
+	 */
 	protected $baseDomain = '';
 
 	/**
@@ -199,6 +204,9 @@ class Facebook
 		}
 		if (isset($config['user_access_token'])) {
 			$this->user_access_token = $config['user_access_token'];
+		}
+		if (isset($config['app_namespace'])) {
+			$this->app_namespace = $config['app_namespace'];
 		}
 	}
 
@@ -1035,6 +1043,33 @@ class Facebook
 		catch (Exception $e) {
 			return;
 		}
+	}
+	
+	// $data: see https://developers.facebook.com/docs/reference/api/user/#posts
+	public static function post_opengraph($data) {
+		$f = self::connect();
+		stkoauth::init(stash()->user_id);
+		$token = stkoauth::get_token('facebook');
+		if (!$f || !$token) {
+			return;
+		}
+		try {
+			$data['access_token'] = $token;
+			debug('facebook api call: ','/me/feed?with=location','POST',$data);
+			$result = $f->api(
+				'/me/feed?with=location', 
+				'POST', 
+				$data
+			);
+			debug('facebook post / API call returns: ', $result);
+			return $result;
+		}
+		catch (Exception $e) {
+			debug($e);
+			return;
+		}
+
+
 	}
 }
 
