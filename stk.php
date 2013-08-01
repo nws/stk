@@ -42,10 +42,12 @@ function config($config) {
 	config::$whoami = $config;
 	if (!empty($_SERVER["HTTPS"])) {
 		config::$baseurl = str_replace('http://','https://',config::$baseurl);
-		foreach (config::$static_baseurls as &$u) {
-			$u = str_replace('http://','https://',$u);
+		if (config::$static_baseurls) {
+			foreach (config::$static_baseurls as &$u) {
+				$u = str_replace('http://','https://',$u);
+			}
+			unset($u);
 		}
-		unset($u);
 	}
 	if (config::$baseurl === false) {
 		config::$baseurl = 'http://'.config::$host.'/';
