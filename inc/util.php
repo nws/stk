@@ -1117,38 +1117,6 @@ function crit($selq, $key, $crit, $default = null) {
 	}
 }
 
-function autoseo_postfilter($output) {
-	$tiles = array(
-		'journal',
-		'board',
-	);
-	$baseurl = url('');
-
-	$rx = '@href=([\'"])'.$baseurl.'('.implode('|', $tiles).')/(\d+)\1@';
-	if (preg_match_all($rx, $output, $m, PREG_SET_ORDER)) {
-		$by_type = array();
-		foreach ($m as $_) {
-			$by_type[ $_[2] ][ $_[3] ] = false;
-		}
-
-		foreach ($by_type as $type => &$ids) {
-			$ids = m($type)->get_name_mass(array_keys($ids));
-		}
-		unset($ids);
-
-		$replace = function($m) use($by_type, $baseurl) {
-			if (empty($by_type[ $m[2] ][ $m[3] ])) {
-				return $m[0];
-			}
-			$name = urlencode(autoseo_encode_name($by_type[$m[2]][$m[3]]));
-			return "href={$m[1]}{$baseurl}{$m[2]}/{$m[3]}-{$name}{$m[1]}";
-		};
-
-		$output = preg_replace_callback($rx, $replace, $output);
-	}
-	return $output;
-}
-
 function autoseo_encode_name($name) {
 	return trim(preg_replace('/[^a-z0-9]+/i', '_', $name),'_');
 }
