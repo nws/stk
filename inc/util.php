@@ -722,7 +722,9 @@ function curl_get($url, $headers = array(),$userpw='', $follow_redir = false, $c
 		curl_setopt_array($ch, $curl_opts);
 	}
 
-	$headers[] = 'Accept-Language: en-us';
+	if (!preg_grep('/^accept-language:/i', $headers)) {
+		$headers[] = 'Accept-Language: en-us';
+	}
 	if (!empty($headers)) {
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 	}

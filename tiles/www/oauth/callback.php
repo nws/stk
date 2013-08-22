@@ -200,7 +200,7 @@ else if ($service_data['login_service'] and $remote_user_id) { // login_service 
 else if ($service_data['login_service'] === null) {
 	// login_service === null
 	m('kv')->set($service.'_oauth_data', $reply);
-	if (!empty($reply['access_token']) && !empty($reply['refresh_token'])) {
+	if (!empty($reply['access_token'])) {
 		m('kv')->set($service.'_access_token', $reply['access_token']);
 	}
 	else {
