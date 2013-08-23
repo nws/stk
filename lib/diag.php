@@ -175,7 +175,9 @@ class diag {
 			if (!headers_sent()) {
 				header('Content-Type: text/html; charset=UTF-8', true, 500);
 			}
-			if ($message = @file_get_contents(self::$cwd.'static/fatal.http')) {
+			$fn = self::$cwd.'static/fatal.http';
+
+			if (file_exists($fn) && is_readable($fn) && ($message = file_get_contents($fn))) {
 				list(, $message) = explode("\r\n\r\n", $message);
 				echo $message;
 			}

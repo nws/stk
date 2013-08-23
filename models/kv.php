@@ -20,11 +20,11 @@ class kv extends model {
 	}
 
 	// expiry is null or seconds from now
-	protected function set($key, $value) {
+	protected function set($key, $value, $encode_func = 'json_encode') {
 		$this->is_destructive(array('kv'));
 		$rec = array(
 			'kv_id' => $key, 
-			'value' => json_encode($value), 
+			'value' => $encode_func($value), 
 		);
 		return mod::replace('kv')
 			->values($rec)
@@ -32,7 +32,7 @@ class kv extends model {
 	}
 
 	// $default overrides whatever $this->defaults() would return
-	protected function get($key, $default = null) {
+	protected function get($key, $default = null, $decode_func = 'json_decode') {
 		$this->used_tables(array('kv'));
 		$value = sel::from('kv')
 			->fields('value')
@@ -40,7 +40,12 @@ class kv extends model {
 			->exec_one();
 
 		if (!empty($value)) {
-			return json_decode($value['value'], true);
+			if ($decode_func === 'json_decode') {
+				return $decode_func($value['value'], true);
+			}
+			else {
+				return $decode_func($value['value']);
+			}
 		}
 
 		if (func_num_args() == 1) {
