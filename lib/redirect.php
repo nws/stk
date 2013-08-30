@@ -49,7 +49,9 @@ function redirect($url = null, $status_code = 302, $extraparams = array()) {
 	$url = url($url, true);
 
 	header('Location: '.$url, true, $status_code);
-	debug('redirect('.$url.')');
+
+	bt_debug(array('file', '/redirect.php/'), 'redirect('.$url.')');
+	//debug('redirect('.$url.')');
 	stk_exit(true);
 }
 

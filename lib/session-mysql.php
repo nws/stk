@@ -37,7 +37,7 @@ class session_mysql {
 		self::$m = models::get('session_store');
 		return true;
 	}
-	
+
 	static function close() {
 		return true;
 	}

@@ -98,7 +98,7 @@ else if ($service_data['version'] == 2) {
 	$redirect_uri[count($redirect_uri)-2] = 'callback';
 
 	$redirect_uri = url($redirect_uri, true);
-	$auth_url = OAuth2::authorize_url($service_data['url_authorize'], 
+	$auth_url = OAuth2::authorize_url($service_data['url_authorize'],
 		$service_data['key'], $redirect_uri, $permissions, $params);
 }
 else {

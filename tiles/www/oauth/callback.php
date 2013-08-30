@@ -191,10 +191,14 @@ else if ($service_data['login_service'] and $remote_user_id) { // login_service 
 		set_message('Welcome Back, %s!', null, array(stash()->user['name']));
 	}
 	else {
-		// new user. stash his shit in the session and redirect to wherever
-		stkoauth::set_session($service, $token, $secret, $remote_user_id);
-
-		redirect($service_data['register_redirect']);
+		if (!empty($service_data['register_function'])) {
+			call_user_func(array($service_class, $service_data['register_function']), $service, $token, $secret, $remote_user_id);
+		}
+		else {
+			// new user. stash his shit in the session and redirect to wherever
+			stkoauth::set_session($service, $token, $secret, $remote_user_id);
+			redirect($service_data['register_redirect']);
+		}
 	}
 }
 else if ($service_data['login_service'] === null) {

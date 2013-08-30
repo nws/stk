@@ -76,6 +76,7 @@ class userlib {
 		self::remove_roles();
 		setcookie(session_name(), '', time()-86400, '/', config::$cookie_domain); // remove the session cookie for sure
 		session_destroy();
+		session_start();
 	}
 
 	// if called without args, returns true if any user is logged in
