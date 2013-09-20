@@ -246,6 +246,15 @@ class t {
 		return null;
 	}
 
+	static function is_file_in_tree($path) {
+		foreach (array(SITE_PATH, STK_PATH) as $r) {
+			if (is_file($r.$path)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/* collect group tiles for given $tile_name */
 	static function collect_groups($tile_name) {
 		static $cached_groups = array();
@@ -260,9 +269,10 @@ class t {
 			$loc = '';
 
 			while ($p = array_shift($loc_path)) {
-				if (is_file('tiles/'.$loc.$p.'/_'.$p.'.php')) {
+				if (self::is_file_in_tree('tiles/'.$loc.$p.'/_'.$p.'.php')) {
 					$groups[] = array($loc.$p.'/_'.$p, true);
-				} else if (is_file('tiles/'.$loc.$p.'/_grouptile.php')) {
+				}
+				else if (self::is_file_in_tree('tiles/'.$loc.$p.'/_grouptile.php')) {
 					$groups[] = array($loc.$p.'/_grouptile', true);
 				}
 				$loc .= $p.'/';
