@@ -229,7 +229,8 @@ function stk_libs() {
 		'img',
 		'video',
 		'apc-compat',
-		'fc'
+		'fc',
+		'tempfile'
 	);
 	debug_usage('post lib()');
 }
