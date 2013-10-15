@@ -128,6 +128,48 @@ function recaptcha_get_html ($pubkey, $error = null, $use_ssl = false)
 	</noscript>';
 }
 
+function recaptcha_get_custom_html ($pubkey, $error = null, $use_ssl = false, $html_id = 'recaptcha_widget') {
+	if ($pubkey == null || $pubkey == '') {
+		die ("To use reCAPTCHA you must get an API key from <a href='https://www.google.com/recaptcha/admin/create'>https://www.google.com/recaptcha/admin/create</a>");
+	}
+	if ($use_ssl) {
+		$server = RECAPTCHA_API_SECURE_SERVER;
+	} else {
+		$server = RECAPTCHA_API_SERVER;
+	}
+	$errorpart = "";
+	if ($error) {
+		$errorpart = "&amp;error=" . $error;
+	}
+	return '
+<script type="text/javascript">
+	var RecaptchaOptions = {
+		theme : \'custom\',
+		custom_theme_widget: \''.$html_id.'\'
+	};
+</script>
+
+<div id="'.$html_id.'" style="display:none">
+	<div id="recaptcha_image"></div>
+	<div class="recaptcha_only_if_incorrect_sol" style="color:red">Incorrect please try again</div>
+	<span class="recaptcha_only_if_image">Enter the words above:</span>
+	<span class="recaptcha_only_if_audio">Enter the numbers you hear:</span>
+	<input type="text" id="recaptcha_response_field" name="recaptcha_response_field" />
+	<div><a href="javascript:Recaptcha.reload()">Get another CAPTCHA</a></div>
+	<div class="recaptcha_only_if_image"><a href="javascript:Recaptcha.switch_type(\'audio\')">Get an audio CAPTCHA</a></div>
+	<div class="recaptcha_only_if_audio"><a href="javascript:Recaptcha.switch_type(\'image\')">Get an image CAPTCHA</a></div>
+	<div><a href="javascript:Recaptcha.showhelp()">Help</a></div>
+</div>
+
+<script type="text/javascript" src="'.$server.'/challenge?k='.$pubkey.'"></script>
+
+<noscript>
+	<iframe src="'.$server.'/noscript?k='.$pubkey.'" height="300" width="500" frameborder="0"></iframe><br>
+	<textarea name="recaptcha_challenge_field" rows="3" cols="40"></textarea>
+	<input type="hidden" name="recaptcha_response_field" value="manual_challenge">
+</noscript>
+';
+}
 
 
 
