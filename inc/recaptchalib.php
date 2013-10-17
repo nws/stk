@@ -151,7 +151,7 @@ function recaptcha_get_custom_html ($pubkey, $error = null, $use_ssl = false, $h
 
 <div id="'.$html_id.'" style="display:none">
 	<div id="recaptcha_image"></div>
-	<div class="recaptcha_only_if_incorrect_sol" style="color:red">Incorrect please try again</div>
+	<span id="recaptcha_instructions_error">Incorrect, please try again</span>
 	<span class="recaptcha_only_if_image">Type the two words:</span>
 	<span class="recaptcha_only_if_audio">Enter the numbers you hear:</span>
 	<input type="text" id="recaptcha_response_field" name="recaptcha_response_field" />
