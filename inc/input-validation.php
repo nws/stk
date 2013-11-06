@@ -8,6 +8,9 @@ function filter_string_not_empty($str) {
 	return isset($str) and strlen($str) > 0;
 }
 
+function filter_email($str) {
+        return !!preg_match('/^[^@]+@[^.]+\..+$/', trim($str));
+}
 function filter_preg_match($str, $pattern) {
 	return !!preg_match($pattern, $str);
 }
