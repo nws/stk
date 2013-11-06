@@ -1,4 +1,5 @@
 <?php
+//!allow ->debug
 
 class sel {
 	static $global_debug = false;

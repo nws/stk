@@ -1,4 +1,5 @@
 <?php
+//!allow print_r
 
 function inc() {
 	static $done = array();

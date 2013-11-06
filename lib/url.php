@@ -62,7 +62,7 @@ function url($spec, $absolute = false) {
 }
 
 function track_url($spec, $absolute = true, $utm = array()) {
-	$spec = url_seo(url_normalize($spec));
+	$spec = url_normalize($spec);
 	if (!$spec['external']) {
 		$spec['query'] += $utm;
 	}
@@ -171,142 +171,10 @@ function url_current() {
 }
 
 // in: stk_url
-// out: stk_url, path changed so it has the little names on it.. ooo
-function url_seo($url) {
-	if (!isset($url['path'])) {
-		$url = url_normalize($url);
-	}
-	$path = $url['path'];
-
-	if (!$url['external'] 
-		and count($path) > 2 
-		and $path[1] == 'index' 
-		and ((string)intval($path[2]) == (string)$path[2])) 
-	{
-		$show_names_prewarm = scache_get('make_link_show_names');
-		$artist_names_prewarm = scache_get('make_link_artist_names');
-		$venue_names_prewarm = scache_get('make_link_venue_names');
-		$user_names_prewarm = scache_get('make_link_user_names');
-		$festival_names_prewarm = scache_get('make_link_festival_names');
-
-		$name = '';
-		switch ($path[0]) {
-		case 'artist':
-			if (isset($artist_names_prewarm[$path[2]])) {
-				$name = $artist_names_prewarm[$path[2]];
-			}
-			else {
-				$name = models::get('artist')->get_artist_name($path[2]);
-			}
-			break;
-
-		case 'show':
-			if (isset($show_names_prewarm[$path[2]])) {
-				$name = $show_names_prewarm[$path[2]];
-			}
-			else {
-				$name = models::get('show')->get_show_name($path[2]);
-			}
-			break;
-
-		case 'user':
-			if (isset($user_names_prewarm[$path[2]])) {
-				$name = $user_names_prewarm[$path[2]];
-			}
-			else {
-				$name = models::get('user')->get_user_name($path[2]);
-			}
-			break;
-
-		case 'venue':
-			if (isset($venue_names_prewarm[$path[2]])) {
-				$name = $venue_names_prewarm[$path[2]];
-			}
-			else {
-				$name = models::get('venue')->get_venue_name($path[2]);
-			}
-			break;
-
-		case 'festival':
-			if (isset($festival_names_prewarm[$path[2]])) {
-				$name = $festival_names_prewarm[$path[2]];
-			}
-			else {
-				$name = models::get('show')->get_festival_name($path[2]);
-			}
-			break;
-
-		default:
-			error("bad path: ".print_r($path, 1));
-		}
-
-		if (!$name) {
-			$name = '';
-		}
-		else {
-			$name = urlize_string($name);
-		}
-
-		if ($name) {
-			$path[2] = $path[2].'-'.$name;
-		}
-	}
-
-	$url['path'] = $path;
-	return $url;
-}
-
-// in: stk_url
 // out: raw relative link
 function make_link($url, $absolute = false, $from_template = false) { // array or string, hash or string
-	if ($from_template and !empty(config::$output_filters['make_link_postfilter'])) {
-		global $_make_link_urls;
-		$data = array($url['path'], $url['query'], intval($absolute));
-		$_make_link_urls[] = $url['path'];
-		return '<!-- make_link:'.implode('#', $data).' -->';
-	}
-	else {
-		$url = url_normalize($url);
-		$url = url_seo($url);
-		return url($url, $absolute);
-	}
-}
-
-function make_link_postfilter($output) {
-	global $_make_link_urls;
-	if (empty($_make_link_urls)) {
-		return $output;
-	}
-	$ids = array();
-	foreach ($_make_link_urls as $url) {
-		list($type, $id) = explode('/index/', $url);
-		if (!$id) {
-			continue;
-		}
-		$ids[$type][$id] = 1;
-	}
-	if (!empty($ids['show'])) {
-		scache_put('make_link_show_names', models::get('show')->get_show_name(array_keys($ids['show'])));
-	}
-	if (!empty($ids['venue'])) {
-		scache_put('make_link_venue_names', models::get('venue')->get_venue_name(array_keys($ids['venue'])));
-	}
-	if (!empty($ids['user'])) {
-		scache_put('make_link_user_names', models::get('user')->get_user_name(array_keys($ids['user'])));
-	}
-	if (!empty($ids['artist'])) {
-		scache_put('make_link_artist_names', models::get('artist')->get_artist_name(array_keys($ids['artist'])));
-	}
-	if (!empty($ids['festival'])) {
-		scache_put('make_link_festival_names', models::get('show')->get_festival_name(array_keys($ids['festival'])));
-	}
-
-	$output = preg_replace_callback('/<!-- make_link:([^#]*)#([^#]*)#(\d+) -->/', 'make_link_postfilter_cb', $output);
-	return $output;
-}
-
-function make_link_postfilter_cb($m) {
-	return make_link(array('path' => $m[1], 'query' => $m[2]), $m[3], false); // not from template
+	$url = url_normalize($url);
+	return url($url, $absolute);
 }
 
 function url_referer() {

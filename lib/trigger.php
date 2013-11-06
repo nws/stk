@@ -47,18 +47,4 @@ class trigger {
 			}
 		}
 	}
-
-	static function dump() {
-		foreach (self::$handlers as $event => $callbacks) {
-			ksort($callbacks, SORT_NUMERIC);
-			foreach ($callbacks as $prio => $functions) {
-				echo "event: $event, prio: $prio<br/>";
-				foreach ($functions as $f) {
-					echo "{$f[0]}(".implode(', ', $f[1]), ')<br/>';
-				}
-				var_dump($event, $prio, $functions);
-				echo '<hr/>';
-			}
-		}
-	}
 }

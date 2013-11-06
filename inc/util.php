@@ -1,4 +1,5 @@
 <?php
+//!allow var_dump
 
 function video_url($hash) {
 	return url($hash, true);

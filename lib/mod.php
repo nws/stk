@@ -1,4 +1,6 @@
 <?php
+//!allow print_r
+//!allow ->debug
 
 class mod {
 	public $debug_mode = false;

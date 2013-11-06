@@ -1,4 +1,5 @@
 <?php
+//!allow print_r
 
 function tempfile($options = array()) {
 	$options += array(
