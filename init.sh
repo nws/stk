@@ -19,3 +19,5 @@ mkdir -p tmpl/www
 mkdir misc
 mkdir inc
 mkdir models
+
+cp stk/.gitignore .

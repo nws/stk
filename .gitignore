@@ -1,0 +1,5 @@
+cfg/*localcfg.php
+misc/*
+.swp
+*~
+smarty/compile/*
