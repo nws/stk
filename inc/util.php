@@ -507,7 +507,7 @@ function pf_art_cities() {
 }
 
 function clean_email($email) {
-	return preg_replace('/^([^@]+)\+[^@]+@/', '\1@', $email);
+	return preg_replace('/^([^@]+)\+[^@]+@/', '\1@', preg_replace('/\s/', '', strtolower($email)));
 }
 
 function hash_email($email) {
