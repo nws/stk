@@ -58,3 +58,6 @@ function mangle_int_between($int, $floor, $ceil) {
 }
 
 
+function filter_check_phone_nr($val) {
+	return check_phone_nr($val) ? true : 'invalid phone number';
+}
