@@ -294,6 +294,7 @@ function stk_setup() {
 function stk_exit($redirecting = false, $rv = 0) {
 	if (!$redirecting) {
 		unset_message();
+		trigger::fire('unset_flash');
 	}
 	trigger::fire('exit');
 
