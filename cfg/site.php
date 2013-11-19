@@ -149,13 +149,6 @@ class config {
 
 	static $delete_time_limit = 900; // 15 minutes (this is how long the user may delete his own stuff)
 
-	static $facebook = array(
-		'url_root' => 'http://static.ak.connect.facebook.com/',
-		'api_key' => '',
-		'api_secret' => '',
-		'app_namespace' => '',
-	);
-
 	static $bitly = array(
 		'login' => '',
 		'api_key' => '',
