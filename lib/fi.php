@@ -149,6 +149,9 @@ class fi {
 			}
 			self::$query_count_by_ck[self::$ck] = 0;
 			self::query("SET NAMES utf8");
+			if (!empty(config::$timezone)) {
+				self::query("SET time_zone = '".config::$timezone."'");
+			}
 		} else {
 			return;
 		}
