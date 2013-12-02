@@ -228,11 +228,11 @@ class mod {
 		}
 
 		static $statements = array(
-			'insert' => 'INSERT INTO `%s`',
-			'insert ignore' => 'INSERT IGNORE INTO `%s`',
-			'update' => 'UPDATE `%s`',
-			'delete' => 'DELETE FROM `%s`',
-			'replace' => 'REPLACE INTO `%s`',
+			'insert' => 'INSERT INTO `%s` ',
+			'insert ignore' => 'INSERT IGNORE INTO `%s` ',
+			'update' => 'UPDATE `%s` ',
+			'delete' => 'DELETE FROM `%s` ',
+			'replace' => 'REPLACE INTO `%s` ',
 		);
 
 		$this->_check();
@@ -243,6 +243,9 @@ class mod {
 
 		do {
 			$q = sprintf($statements[$this->mode], $this->table);
+			if (!empty($this->options['force_index'])) {
+				$q .= 'FORCE INDEX (`'.$this->options['force_index'].'`) ';
+			}
 
 			$args = array();
 
