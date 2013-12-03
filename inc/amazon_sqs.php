@@ -26,7 +26,6 @@ class amazon_sqs {
 		$resp = $this->sqs->receive_message($this->queue_url, $opts);
 
 		if ($resp->status!=200) {
-			var_dump($resp);
 			debug('SQS ERROR: ',$resp);
 		}
 		if (isset($resp->body->ReceiveMessageResult->Message)) {
@@ -38,6 +37,11 @@ class amazon_sqs {
 	}
 	public function remove($handle, $opts=null) {
 		$resp = $this->sqs->delete_message($this->queue_url, $handle ,$opts);
+		return $resp;
+	}
+
+	public function send($msg) {
+		$resp = $this->sqs->send_message($this->queue_url, $msg);
 		return $resp;
 	}
 
