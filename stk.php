@@ -486,6 +486,31 @@ function debug($s) {
 	}
 }
 
+function dd($s) {
+	//$s = '['.stk_memusage().'/'.stk_timing().'] '.$s;
+	if (class_exists('t') and t::current_tile()) {
+		$s = '{'.t::current_tile().'} '.$s;
+	}
+	else {
+		$s = '{NONE?} '.$s;
+	}
+
+	$args = func_get_args();
+	array_shift($args);
+
+	if (empty($args)) {
+		stk_error_log($s);
+		return;
+	}
+
+	foreach ($args as $i => $a) {
+		$a = explode("\n", trim(far_dump($a)));
+		foreach ($a as $_) {
+			stk_error_log("$s $i: $_");
+		}
+	}
+}
+
 function stk_set_cli_error_log($file = null) {
 	static $stk_cli_error_log;
 	if ($file !== null) {
