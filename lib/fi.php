@@ -125,6 +125,10 @@ class fi {
 	}
 
 	static function real_connect($connection_key, $host, $user, $pass, $db, $port) {
+		if (!class_exists('mysqli')) {
+			debug('no mysqli extension, giving up.');
+			stk_exit();
+		}
 		self::$mysqli[$connection_key] = @new mysqli($host, $user, $pass, $db, $port);
 		if (mysqli_connect_error()) {
 			self::$mysqli[$connection_key] = null;
