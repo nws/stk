@@ -643,7 +643,6 @@ function stk_set_include_path($entry_point_path) {
 	define('STK_PATH', rtrim($stk_path, '/').'/');
 
 	$path_suffixes = array(
-		'.',
 		'inc/',
 		'inc/pear',
 		'lib',
@@ -653,6 +652,7 @@ function stk_set_include_path($entry_point_path) {
 
 	$paths = array();
 	foreach (array($site_path, $stk_path) as $pfx) {
+		$paths[] = $pfx;
 		foreach ($path_suffixes as $ps) {
 			$paths[] = "$pfx/$ps";
 		}
