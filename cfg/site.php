@@ -8,6 +8,7 @@ define('COUNTRY_ID_USA', 840);
 define('COUNTRY_ID_UK', 826);
 
 class config {
+	static $db_charset = 'utf8'; // set this to utf8mb4 if you have utf8mb4 columns in the db and want _actual_ utf8 from mysql
 	static $timezone = 'America/New_York';
 	static $admin_user = 'admin';
 	static $admin_pass = 'admin';

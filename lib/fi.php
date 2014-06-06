@@ -152,7 +152,7 @@ class fi {
 				error('cannot connect to db '.self::error(1));
 			}
 			self::$query_count_by_ck[self::$ck] = 0;
-			self::query("SET NAMES utf8");
+			self::query("SET NAMES ".config::$db_charset);
 			if (!empty(config::$timezone)) {
 				self::query("SET time_zone = '".config::$timezone."'");
 			}
