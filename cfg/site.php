@@ -2,7 +2,6 @@
 
 // make 100% sure this is the same TZ mysql is set to, or there will be untold grief
 // and the lamentations of thousands
-date_default_timezone_set(config::$timezone);
 
 define('COUNTRY_ID_USA', 840);
 define('COUNTRY_ID_UK', 826);
@@ -219,4 +218,4 @@ if (file_exists('cfg/localcfg.php')) {
 	include 'localcfg.php';
 }
 
-
+date_default_timezone_set(config::$timezone);
