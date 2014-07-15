@@ -11,13 +11,16 @@ switch ($mode) {
 		header('Content-Type: text/css');
 		$target = implode('/', $args);
 		$src = preg_replace('/\.css$/', '.scss', $target);
-		$st = 'scss -C '.escapeshellarg($src).' '.escapeshellarg($target);
+		$st = 'scss -C '.escapeshellarg($src).' '.escapeshellarg($target).' 2>&1';
 		exec($st, $output, $rv);
 		if ($rv !== 0) {
-			debug("SCSS compiler died with $output ($rv)");
+			debug("SCSS compiler died with ".print_r($output,1)." ($rv)");
+			die("SCSS compiler died with ".print_r($output,1)." ($rv)");
 		}
 		else {
-			echo file_get_contents($target);
+			$args[0].='_00'.time().rand(0,1000);
+			$target = implode('/', $args);
+			redirect($target);
 		}
 	break;
 	default:
