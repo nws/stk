@@ -142,7 +142,6 @@ function recaptcha_get_custom_html ($pubkey, $error = null, $use_ssl = false, $h
 		$errorpart = "&amp;error=" . $error;
 	}
 	return '
-KAKAKAAKAAKAKAKAKAKAKAKAAK
 <script type="text/javascript">
 	var RecaptchaOptions = {
 		theme : \'custom\',
