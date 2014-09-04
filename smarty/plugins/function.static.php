@@ -4,7 +4,7 @@ function smarty_function_static($params, $sm) {
 	if (empty($params['url'])) {
 		error('{static url=...} needs url param');
 	}
-	if (isset($params['compile']) && config::$instance_type=='dev') {
+	if (isset($params['compile']) && config::$instance_type=='dev' && !empty(config::$instance_scss)) {
 		$purl = url_parse($params['url']);
 		array_unshift($purl['path'], $params['compile']);
 		array_unshift($purl['path'], 'compile');
