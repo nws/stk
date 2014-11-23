@@ -162,10 +162,10 @@ function recaptcha_get_custom_html ($pubkey, $error = null, $use_ssl = false, $h
 </div>
 
 <script type="text/javascript"
-src="http://www.google.com/recaptcha/api/challenge?k='.$pubkey.'">
+src="//www.google.com/recaptcha/api/challenge?k='.$pubkey.'">
 </script>
 <noscript>
-<iframe src="http://www.google.com/recaptcha/api/noscript?k='.$pubkey.'"
+<iframe src="//www.google.com/recaptcha/api/noscript?k='.$pubkey.'"
 height="300" width="500" frameborder="0"></iframe><br>
 <textarea name="recaptcha_challenge_field" rows="3" cols="40">
 </textarea>
