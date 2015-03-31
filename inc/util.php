@@ -1179,10 +1179,11 @@ function generate_missing_ondemand_images($loc) {
         if (count($loc) != 6) {
                 return;
         }
-
         list($static_dir, $files_dir,
                 $type, $size, $key_dir, $key) = $loc;
-        if ("$static_dir/$files_dir" == config::$static_dir.'files') {
+
+
+		if (strpos($static_dir, 'static') === 0 &&  "$files_dir" =='files') {
                 if (!empty(config::$img_stores['local']['sizes'][ $type ][ $size ][3]['ondemand'])) {
 
                         $key = implode(':', array($type, 'local', $key));
