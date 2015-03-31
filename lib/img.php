@@ -350,7 +350,7 @@ class img {
 		return strtolower($ext);
 	}
 
-	static function make_thumbnail($dst_fn, $twidth, $theight, $src_fn, $crop = false) {
+	static function make_thumbnail($dst_fn, $twidth, $theight, $src_fn, $crop = false, $grayscale = false) {
 		$dst_fn = preg_replace('/[^.]+$/', 'jpg', $dst_fn);
 		$size = @getimagesize($src_fn);
 		if ($size === false) {
@@ -419,6 +419,9 @@ class img {
 			$src_x = ($owidth/2)-($new_width/2);
 		}
 		imagecopyresampled($thumb, $org_image, 0, 0, $src_x, $src_y, $new_width, $new_height, $owidth, $oheight);
+		if ($grayscale) {
+			imagefilter($thumb, IMG_FILTER_GRAYSCALE);
+		}
 		imagedestroy($org_image);
 		imagejpeg($thumb, $dst_fn,80);
 		imagedestroy($thumb);
@@ -515,7 +518,8 @@ class img {
 					if ($crop && !empty($dims[3]['cropmode'])) {
 						$crop = $dims[3]['cropmode'];
 					}
-					self::make_thumbnail($dst, $want_x, $want_y, $of, $crop);
+					$grayscale = !empty($dims[3]['grayscale']);
+					self::make_thumbnail($dst, $want_x, $want_y, $of, $crop, $grayscale);
 				}
 				if ($done_stuff) {
 					echo $s;
@@ -619,7 +623,8 @@ class img {
 				if ($crop && !empty($dims[3]['cropmode'])) {
 					$crop = $dims[3]['cropmode'];
 				}
-				self::make_thumbnail($path.$new_name, $want_x, $want_y, $tmp_path, $crop);
+				$grayscale = !empty($dims[3]['grayscale']);
+				self::make_thumbnail($path.$new_name, $want_x, $want_y, $tmp_path, $crop, $grayscale);
 			}
 		}
 		
