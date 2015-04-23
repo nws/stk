@@ -134,10 +134,7 @@ else {
 $username = $remote_user_id = null;
 if ($service_data['login_service'] !== null) {
 	// get their remote uid
-	$args = array($token);
-	if ($secret !== null) {
-		$args[] = $secret;
-	}
+	$args = array($token, $secret, $reply);
 	$u = call_user_func_array(array($service_class, 'get_username'), $args);
 	$username = $u['name'];
 	$remote_user_id = $u['user_id'];
