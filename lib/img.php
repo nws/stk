@@ -566,7 +566,7 @@ class img {
 		$ext = self::get_ext($file_struct['name']);
 
 		if ($this_size_only === null) {
-			$uniq_name = uniqid('i');
+			$uniq_name = 'i'.strrev(uniqid());
 			$new_name = $uniq_name.'.'.$ext;
 			$dir_name = substr($new_name, 0, $config['hash_len']);
 
