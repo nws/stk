@@ -10,6 +10,6 @@ function smarty_function_static($params, $sm) {
 		array_unshift($purl['path'], 'compile');
 		return url($purl);
 	}
-	return make_static_url($params['url']);
+	return make_static_url($params['url'], $params);
 }
 

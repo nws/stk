@@ -1153,14 +1153,15 @@ function autoseo_strip() {
 	}
 }
 
-function make_static_url($key) {
+function make_static_url($key, $opts = array()) {
 	$rev = config::$static_files_revision_postfix;
 
 	if (is_array(config::$static_baseurls) and !empty(config::$static_baseurls)) {
 		$sum = array_sum(unpack("c*", $key));
 		$staticroot = config::$static_baseurls[$sum%count(config::$static_baseurls)];
-	} else {
-		$staticroot = config::$webroot;
+	}
+	else {
+		$staticroot = !empty($opts['absolute']) ? config::$baseurl : config::$webroot;
 	}
 
 	$url = $staticroot.$key;
