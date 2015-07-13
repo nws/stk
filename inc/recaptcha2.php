@@ -24,7 +24,7 @@ function recaptcha2_get_head_html() {
 
 function recaptcha2_get_html($theme = 'light') {
 	$t = " theme=\"$theme\""; 
-	$st = '<div class="g-recaptcha"'.$t.' data-sitekey="'.config::$recaptcha['pub_key'].'"></div>';
+	return '<div class="g-recaptcha"'.$t.' data-sitekey="'.config::$recaptcha['pub_key'].'"></div>';
 }
 
 function resolve_recaptcha_error($st) {
