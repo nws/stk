@@ -22,8 +22,9 @@ function recaptcha2_get_head_html() {
 	return '<script src="https://www.google.com/recaptcha/api.js"></script>';
 }
 
-function recaptcha2_get_html() {
-	return '<div class="g-recaptcha" data-theme="dark" data-sitekey="'.config::$recaptcha['pub_key'].'"></div>';
+function recaptcha2_get_html($theme = 'light') {
+	$t = " theme=\"$theme\""; 
+	$st = '<div class="g-recaptcha"'.$t.' data-sitekey="'.config::$recaptcha['pub_key'].'"></div>';
 }
 
 function resolve_recaptcha_error($st) {
