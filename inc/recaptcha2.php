@@ -22,8 +22,9 @@ function recaptcha2_get_head_html() {
 	return '<script src="https://www.google.com/recaptcha/api.js"></script>';
 }
 
-function recaptcha2_get_html($theme = 'light') {
+function recaptcha2_get_html($theme = 'light', $size="compact") {
 	$t = " theme=\"$theme\""; 
+	$t.= " size=\"$size\"";
 	return '<div class="g-recaptcha"'.$t.' data-sitekey="'.config::$recaptcha['pub_key'].'"></div>';
 }
 
