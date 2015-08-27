@@ -1,7 +1,7 @@
 <?php
 
 class email extends model {
-	protected function send($from, $to, $email, $args = array()) {
+	protected function send($from, $to, $email, $args = array(), $more_headers = array()) {
 		if (config::$disable_mailer) {
 			debug("MAILING DISABLED, NOT SENDING", $from, $to, $email, $args);
 			return true;
@@ -24,6 +24,10 @@ class email extends model {
 
 		$charset = 'utf-8';
 		$headers['charset'] = $charset;
+
+		$headers['Reply-To'] = config::$mail_reply_to;
+
+		$headers = array_merge($headers, $more_headers);
 
 		$text_body = html2text($html_body);
 
