@@ -1217,3 +1217,7 @@ function utc_jsdate($dt) {
 	return date_format($d, 'd M Y H:i:s T');
 }
 
+function geoip_country_code_by_name_quiet($h) {
+		return @geoip_country_code_by_name($h);
+}
+
