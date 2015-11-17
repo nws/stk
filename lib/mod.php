@@ -10,6 +10,7 @@ class mod {
 	private $mode;
 	private $where = array();
 	private $where_args = array();
+	private $where_op = 'AND';
 	private $table;
 	private $values;
 	private $limit;
@@ -130,6 +131,11 @@ class mod {
 
 	public function limit($n) {
 		$this->limit = intval($n);
+		return $this;
+	}
+
+	public function set_where_op($op) {
+		$this->where_op = $op;
 		return $this;
 	}
 
@@ -292,7 +298,7 @@ class mod {
 				foreach ($this->where as $w) {
 					$where[] = '('.$w.')';
 				}
-				$main_where = ' WHERE '.implode(' AND ', $where);
+				$main_where = ' WHERE '.implode(' '.$this->where_op.' ', $where);
 				$q .= $main_where;
 			}
 
