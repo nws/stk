@@ -210,6 +210,13 @@ class config {
 	static $stomp_pw = 'guest';
 	static $stomp_worker_time = 600;
 	static $stomp_max_runs = 300;
+
+	static $cloudfront_api_user = '';
+	static $cloudfront_api_secret = '';
+	static $cloudfront_distribution_id = '';
+
+	static $cached_static_paths = ['static*'];
+	static $cached_max_ttl = 600;
 }
 
 // make sure that if this file exists, you dont add it to bzr.
