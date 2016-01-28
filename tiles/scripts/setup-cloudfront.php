@@ -9,18 +9,16 @@ function make_aws_api_array($arr) {
 }
 
 function gen_cache_behaviour($path, $origin_id, $cached_methods, $allowed_methods, $max_ttl, $forward_headers, $forward_cookies, $forward_query_string) {
-	$all_allowed_methods = array_uniq($cached_methods + $allowed_methods);
-
 	if (!$forward_cookies) {
 		$cookie_settings = ['Forward' => 'none'];
-	} else if (is_array($forwards_cookies)) {
+	} else if (is_array($forward_cookies)) {
 		$cookie_settings = ['Forward' => 'whitelist', 'WhitelistedNames' => make_aws_api_array($forward_cookies)];
 	} else {
 		$cookie_settings = ['Forward' => 'all'];
 	}
 
 	$ret = [
-		'AllowedMethods' => make_aws_api_array($all_allowed_methods) + ['CachedMethods' => make_aws_api_array($cached_methods)],
+		'AllowedMethods' => make_aws_api_array($allowed_methods) + ['CachedMethods' => make_aws_api_array($cached_methods)],
 		'MinTTL' => 0,
 		'MaxTTL' => $max_ttl,
 		'DefaultTTL' => (int)($max_ttl / 2),
@@ -29,59 +27,17 @@ function gen_cache_behaviour($path, $origin_id, $cached_methods, $allowed_method
 		'ViewerProtocolPolicy' => 'allow-all',
 		'TargetOriginId' => $origin_id,
 		'ForwardedValues' => [
-			'Cookies' => $cookie_settings, ['Forward' => 'all'],
+			'Cookies' => $cookie_settings,
 			'Headers' => make_aws_api_array($forward_headers),
 			'QueryString' => !!$forward_query_string,
-		]
+		],
+		'Compress' => false,
 	];
 
 	if ($path) {
 		$ret['PathPattern'] = $path;
 	}
-
 	return $ret;
-}
-
-function gen_default_behavior($origin_id) {
-	return gen_cache_behaviour($origin_id, ['GET', 'HEAD'], [''], $max_ttl, $forward_headers, $forward_cookies, $forward_query_string) {
-	return [
-		'AllowedMethods' => make_aws_api_array(['HEAD', 'DELETE', 'POST', 'GET', 'OPTIONS', 'PUT', 'PATCH']) + ['CachedMethods' => make_aws_api_array(["GET", "HEAD"])],
-		'MinTTL' => 0,
-		'MaxTTL' => config::$cached_default_max_ttl,
-		'DefaultTTL' => (int)(config::$cached_default_max_ttl / 2),
-		'TrustedSigners' => make_aws_api_array([]) + ['Enabled' => false],
-		'SmoothStreaming' => false,
-		'ViewerProtocolPolicy' => 'allow-all',
-		'TargetOriginId' => $origin_id,
-		'ForwardedValues' => [
-			'Cookies' => ['Forward' => 'all'],
-			'Headers' => make_aws_api_array(['Authorization', 'Host', 'Origin', 'Referer']),
-			'QueryString' => true,
-		]
-	];
-}
-
-function gen_spec_behaviors($origin_id) {
-	$ret = [];
-	foreach (config::$cache_static_paths as $pathp) {
-		$ret[] = [
-			'PathPattern' => $pathp,
-			'AllowedMethods' => make_aws_api_array(['HEAD', 'GET']) + ['CachedMethods' => make_aws_api_array(["GET", "HEAD"])],
-			'MinTTL' => 0,
-			'MaxTTL' => config::$cached_static_max_ttl,
-			'DefaultTTL' => (int)(config::$cached_static_max_ttl / 2),
-			'TrustedSigners' => make_aws_api_array([]) + ['Enabled' => false],
-			'SmoothStreaming' => false,
-			'ViewerProtocolPolicy' => 'allow-all',
-			'TargetOriginId' => $origin_id,
-			'ForwardedValues' => [
-				'Cookies' => ['Forward' => 'none'],
-				'Headers' => make_aws_api_array(['Host']),
-				'QueryString' => false,
-			]
-		];
-	}
-	return make_aws_api_array($ret);
 }
 
 function cloudfront_setup() {
@@ -90,7 +46,7 @@ function cloudfront_setup() {
 	$distribution_id = config::$cloudfront_distribution_id;
 	
 	$env = "AWS_ACCESS_KEY_ID='$user' AWS_SECRET_ACCESS_KEY='$secret'";
-	$tool = '/usr/bin/aws';
+	$tool = 'aws';
 	$aws_tool_cmd = "$env $tool";
 
 	system("$tool configure set preview.cloudfront true");
@@ -101,16 +57,53 @@ function cloudfront_setup() {
 	$distribution_setup = stream_get_contents($aws_tool_output);
 	pclose($aws_tool_output);
 
-	$distribution_setup = json_decode($distribution_setup, 1)['Distribution']['DistributionConfig'];
-	var_dump($distribution_setup);
+	$resp = json_decode($distribution_setup, 1);
+	$distribution_setup = $resp['Distribution']['DistributionConfig'];
+	$etag = $resp['ETag'];
+
+	if (!$distribution_setup) {
+		echo "there was a problem downloading the distribution setup. check if the `aws` tool is installed and creditentials are right.\n";
+		stk_exit(-1);
+	}
 
 	$origin_id = $distribution_setup['Origins']['Items'][0]['Id'];
 	echo "using $origin_id as origin for rules.\n";
+
+	$defs = config::$cache_kinds[config::$cache_default_kind];
+	$distribution_setup['DefaultCacheBehavior'] = 
+		gen_cache_behaviour(null, $origin_id, 
+			$defs['cached_methods'], 
+			$defs['allowed_methods'], 
+			$defs['ttl'], 
+			$defs['headers'], 
+			$defs['cookies'], 
+			$defs['query_string']);
+
+	$behaviors = [];
+	foreach (config::$cache_paths as $path => $kind) {
+		$defs = config::$cache_kinds[$kind];
+		$behaviors[] = gen_cache_behaviour($path, $origin_id, 
+				$defs['cached_methods'], 
+				$defs['allowed_methods'], 
+				$defs['ttl'], 
+				$defs['headers'], 
+				$defs['cookies'], 
+				$defs['query_string']);
+
+	}
+	$distribution_setup['CacheBehaviors'] = make_aws_api_array($behaviors);
 	
-	$distribution_setup['CacheBehaviors'] = gen_spec_behaviors($origin_id);
-	$distribution_setup['DefaultCacheBehavior'] = gen_default_behavior($origin_id);
+	$config_tmp_file = tempnam(config::$tempdir, 'CF-config-');
+	$tmp_h = fopen($config_tmp_file, 'w');
+	fwrite($tmp_h, json_encode($distribution_setup));
+	fclose($tmp_h);
+	echo $config_tmp_file, "\n";
 	
-	var_dump($distribution_setup);
+	$update_opts = "cloudfront update-distribution --id $distribution_id --distribution-config file://$config_tmp_file --if-match $etag";
+	$update_command = "$aws_tool_cmd $update_opts";
+	echo "doing: $update_command\n";
+	system($update_command);
+	unlink($config_tmp_file);
 }
 
 $args = t::argv();
