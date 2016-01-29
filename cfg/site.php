@@ -215,38 +215,38 @@ class config {
 	static $cloudfront_api_secret = '';
 	static $cloudfront_distribution_id = '';
 
-	static $cache_kinds = [
-		'static' => [
-			'cached_methods' => ['GET', 'HEAD'],
-			'allowed_methods' => [],
-			'ttl' => 7200,
-			'headers' => ['Host'],
-			'cookies' => false,
-			'query_string' => false,
-		],
-		'cached_dynamic' => [
-			'cached_methods' => ['GET', 'HEAD'],
-			'allowed_methods' => ['POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-			'ttl' => 600,
-			'headers' => ['Host', 'Authorization', 'Origin', 'Referer'],
-			'cookies' => true,
-			'query_string' => true,
-		],
-		'uncached' => [
-			'cached_methods' => [],
-			'allowed_methods' => ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-			'ttl' => 0,
-			'headers' => ['Host', 'Authorization', 'Origin', 'Referer'],
-			'cookies' => true,
-			'query_string' => true,
-		],
-	];
+        static $cache_kinds = [
+                'static' => [
+                        'cached_methods' => ['GET', 'HEAD'],
+                        'allowed_methods' => ['HEAD', 'GET'],
+                        'ttl' => 7200,
+                        'headers' => ['Host'],
+                        'cookies' => false,
+                        'query_string' => false,
+                ],
+                'cached_dynamic' => [
+                        'cached_methods' => ['GET', 'HEAD'],
+                        'allowed_methods' => ['HEAD', 'DELETE', 'POST', 'GET', 'OPTIONS', 'PUT', 'PATCH'],
+                        'ttl' => 600,
+                        'headers' => ['Host', 'Authorization', 'Origin', 'Referer'],
+                        'cookies' => true,
+                        'query_string' => true,
+                ],
+                'uncached' => [
+                        'cached_methods' => ['GET', 'HEAD'], // FUCF
+                        'allowed_methods' => ['HEAD', 'DELETE', 'POST', 'GET', 'OPTIONS', 'PUT', 'PATCH'],
+                        'ttl' => 0,
+                        'headers' => ['Host', 'Authorization', 'Origin', 'Referer'],
+                        'cookies' => true,
+                        'query_string' => true,
+                ],
+        ];
 
-	static $cache_default_kind = 'cached_dynamic';
-	static $cache_paths = [
-		'static*' => 'static',
-		'admin/*' => 'uncached',
-	];
+        static $cache_default_kind = 'cached_dynamic';
+        static $cache_paths = [
+                'static*' => 'static',
+                'admin/*' => 'uncached',
+        ];
 }
 
 // make sure that if this file exists, you dont add it to bzr.
