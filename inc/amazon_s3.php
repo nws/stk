@@ -4,25 +4,43 @@ class amazon_s3 {
 	public $s3, $bucket;
 
 	function __construct($key,$secret,$bucket) {
-		inc('amazon/sdk.class');
-		inc('amazon/services/s3.class');
-		$this->s3 = new AmazonS3($key, $secret);
+		inc('amazon/aws-autoloader');
+		$this->s3 = new Aws\S3\S3Client([
+			'version' => 'latest',
+			'region' => 'us-east-1',
+			'credentials' => [
+				'key'    => $key,
+				'secret' => $secret,
+			],
+		]);
 		$this->bucket = $bucket;
 	}
 	
-	function create_object_raw($filename, $ctype, $content) {
+	function put_object($filename, $ctype, $content) {
 		$opt = array();
-		$opt['acl'] = AmazonS3::ACL_PUBLIC;
-		$opt['body'] = $content;
-		$opt['contentType'] = $ctype;
-		return $this->s3->create_object($this->bucket, $filename, $opt);
+		$opt['ACL'] = 'public-read';
+		$opt['Body'] = $content;
+		$opt['ContentType'] = $ctype;
+		$opt['Bucket'] = $this->bucket;
+		$opt['Key'] = $filename;
+		return $this->s3->putObject($opt);
 	}
 	
-	function get_object($filename, $opt = null) {
-		return $this->s3->get_object($this->bucket, $filename, $opt);
+	function get_object($filename, $opt = []) {
+		$opt += [
+			'Bucket' => $this->bucket,
+			'Key' => $filename,
+		];
+		
+		return $this->s3->GetObject($opt);
 	}
+
+	function get_object_url($filename, $opt = null) {
+		return 'https://s3.amazonaws.com/'.$this->bucket.'/'.$filename;
+	}
+
 	
-	function delete_object($filename, $opt = null) {
+	function delete_object($filename, $opt = null) { // THIS NEEDS UPDATE XXX
 		return $this->s3->delete_object($this->bucket, $filename, $opt);
 	}
 }

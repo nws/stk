@@ -1,5 +1,8 @@
 <?php
 
+// this file must be upgraded before use
+stk_exit(-1);
+
 class amazon_sqs {
 	public $sqs, $queue_url, $last_read=null;
 	function __construct($key, $secret, $queue_url) {

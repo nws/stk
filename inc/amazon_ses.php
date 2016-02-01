@@ -8,9 +8,15 @@ class amazon_ses {
 		$this->html = $html;
 		$this->text = $text;
 
-		inc('amazon/sdk.class');
-		inc('amazon/services/ses.class');
-		$this->ses = new AmazonSES($key, $secret);
+		inc('amazon/aws-autoloader');
+		$this->ses = new Aws\Ses\SesClient([
+			'version' => 'latest',
+			'credentials' => [
+				'key' => $key,
+				'secret' => $secret,
+			],
+			'region' => 'us-east-1',
+		]);
 	}
 
 	function send($i, $dont, $care) {
@@ -40,16 +46,26 @@ class amazon_ses {
 			),
 		);
 
-		$rv = $this->ses->send_email($source, $destination, $message);
+		try {
+			$rv = $this->ses->sendEmail([
+				'Source' => $source, 
+				'Destination' => $destination, 
+				'Message' => $message,
+			]);
 
-		debug('AMAZON SES REPLY '.$rv->status, $rv->body);
+			debug('AMAZON SES REPLY', $rv->toArray());
 
-		return $rv->isOK();
+			return true;
+		} catch (Exception $e) {
+			debug('AMAZON SES REPLY EXCEPTION', $e->getMessage());
+			return false;
+		}
 	}
+
 	function get_stats() {
 		return array(
-			'get_send_quota'=>$this->ses->get_send_quota()->body->GetSendQuotaResult,
-			'get_send_statistics'=>$this->ses->get_send_statistics()->body->GetSendStatisticsResult,
+			'get_send_quota'=>$this->ses->getSendQuota([])->toArray(),
+			'get_send_statistics'=>$this->ses->getSendStatistics([])->toArray(),
 		);
 	}
 }

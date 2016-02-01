@@ -1,118 +1,158 @@
-# AWS SDK for PHP
+# AWS SDK for PHP - Version 3
 
-The AWS SDK for PHP enables developers to build solutions for Amazon Simple Storage Service (Amazon S3),
-Amazon Elastic Compute Cloud (Amazon EC2), Amazon SimpleDB, and more. With the AWS SDK for PHP, developers
-can get started in minutes with a single, downloadable package.
+[![@awsforphp on Twitter](http://img.shields.io/badge/twitter-%40awsforphp-blue.svg?style=flat)](https://twitter.com/awsforphp)
+[![Total Downloads](https://img.shields.io/packagist/dt/aws/aws-sdk-php.svg?style=flat)](https://packagist.org/packages/aws/aws-sdk-php)
+[![Build Status](https://img.shields.io/travis/aws/aws-sdk-php.svg?style=flat)](https://travis-ci.org/aws/aws-sdk-php)
+[![Apache 2 License](https://img.shields.io/packagist/l/aws/aws-sdk-php.svg?style=flat)](http://aws.amazon.com/apache-2-0/)
+[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/aws/aws-sdk-php?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-The SDK features:
+The **AWS SDK for PHP** makes it easy for developers to access [Amazon Web
+Services][aws] in their PHP code, and build robust applications and software
+using services like Amazon S3, Amazon DynamoDB, Amazon Glacier, etc. You can
+get started in minutes by [installing the SDK through Composer][docs-installation]
+or by downloading a single zip or phar file from our [latest release][latest-release].
 
-* **AWS PHP Libraries:** Build PHP applications on top of APIs that take the complexity out of coding directly
-  against a web service interface. The toolkit provides APIs that hide much of the lower-level implementation.
-* **Code Samples:** Practical examples for how to use the toolkit to build applications.
-* **Documentation:** Complete SDK reference documentation with samples demonstrating how to use the SDK.
-* **PEAR package:** The ability to install the AWS SDK for PHP as a PEAR package.
-* **SDK Compatibility Test:** Includes both an HTML-based and a CLI-based SDK Compatibility Test that you can
-  run on your server to determine whether or not your PHP environment meets the minimum requirements.
+## Resources
 
-For more information about the AWS SDK for PHP, including a complete list of supported services, see
-[aws.amazon.com/sdkforphp](http://aws.amazon.com/sdkforphp).
+* [User Guide][docs-guide] – For both getting started and in-depth SDK usage information
+* [API Docs][docs-api] – For details about operations, parameters, and responses
+* [Blog][sdk-blog] – Tips & tricks, articles, and announcements
+* [Sample Project][sdk-sample] - A quick, sample project to help get you started
+* [Forum][sdk-forum] – Ask questions, get help, and give feedback
+* [Issues][sdk-issues] – Report issues, submit pull requests, and get involved
+  (see [Apache 2.0 License][sdk-license])
+* [@awsforphp][sdk-twitter] – Follow us on Twitter
+* For Version 2 of the SDK:
+  * [User Guide][docs-guide-v2]
+  * [API Docs][docs-api-v2]
 
+## Features
 
-## Signing up for Amazon Web Services
+* Provides easy-to-use HTTP clients for all supported AWS
+  [services][docs-services], [regions][docs-rande], and authentication
+  protocols.
+* Is built on [Guzzle][guzzle-docs], and utilizes many of its features,
+  including persistent connections, asynchronous requests, middlewares, etc.
+* Provides convenience features including easy result pagination via
+  [Paginators][docs-paginators], [Waiters][docs-waiters], and simple
+  [Result objects][docs-results].
+* Provides a [multipart uploader tool][docs-s3-multipart] for Amazon S3 and
+  Amazon Glacier that can be paused and resumed.
+* Provides an [Amazon S3 Stream Wrapper][docs-streamwrapper], so that you can
+  use PHP's native file handling functions to interact with your S3 buckets and
+  objects like a local filesystem.
+* Provides the [Amazon DynamoDB Session Handler][docs-ddbsh] for easily scaling
+  sessions on a fast, NoSQL database.
+* Automatically uses [IAM Instance Profile Credentials][aws-iam-credentials] on
+  configured Amazon EC2 instances.
 
-Before you can begin, you must sign up for each service you want to use.
+## Getting Started
 
-To sign up for a service:
+1. **Sign up for AWS** – Before you begin, you need to
+   sign up for an AWS account and retrieve your [AWS credentials][docs-signup].
+1. **Minimum requirements** – To run the SDK, your system will need to meet the
+   [minimum requirements][docs-requirements], including having **PHP >= 5.5**
+   compiled with the cURL extension and cURL 7.16.2+ compiled with a TLS
+   backend (e.g., NSS or OpenSSL).
+1. **Install the SDK** – Using [Composer] is the recommended way to install the
+   AWS SDK for PHP. The SDK is available via [Packagist] under the
+   [`aws/aws-sdk-php`][install-packagist] package. Please see the
+   [Installation section of the User Guide][docs-installation] for more
+   detailed information about installing the SDK through Composer and other
+   means.
+1. **Using the SDK** – The best way to become familiar with how to use the SDK
+   is to read the [User Guide][docs-guide]. The
+   [Getting Started Guide][docs-quickstart] will help you become familiar with
+   the basic concepts.
 
-* Go to the home page for the service. You can find a list of services on
-  [aws.amazon.com/products](http://aws.amazon.com/products).
-* Click the Sign Up button on the top right corner of the page. If you don't already have an AWS account, you
-  are prompted to create one as part of the sign up process.
-* Follow the on-screen instructions.
-* AWS sends you a confirmation e-mail after the sign-up process is complete. At any time, you can view your
-  current account activity and manage your account by going to [aws.amazon.com](http://aws.amazon.com) and
-  clicking "Your Account".
+## Quick Examples
 
+### Create an Amazon S3 client
 
-## Source
-The source tree for includes the following files and directories:
+```php
+<?php
+// Require the Composer autoloader.
+require 'vendor/autoload.php';
 
-* `_compatibility_test` -- Includes both an HTML-based and a CLI-based SDK Compatibility Test that you can
-  run on your server to determine whether or not your PHP environment meets the minimum requirements.
-* `_docs` -- Informational documents, the contents of which should be fairly self-explanatory.
-* `_samples` -- Code samples that you can run out of the box.
-* `lib` -- Contains any third-party libraries that the SDK depends on. The licenses for these projects will
-  always be Apache 2.0-compatible.
-* `services` -- Contains the service-specific classes that communicate with AWS. These classes are always
-  prefixed with `Amazon`.
-* `utilities` -- Contains any utility-type methods that the SDK uses. Includes extensions to built-in PHP
-  classes, as well as new functionality that is entirely custom. These classes are always prefixed with `CF`.
-* `README` -- The document you're reading right now.
-* `config-sample.inc.php` -- A sample configuration file that should be filled out and renamed to `config.inc.php`.
-* `sdk.class.php` -- The SDK loader that you would include in your projects. Contains the base functionality
-  that the rest of the SDK depends on.
+use Aws\S3\S3Client;
 
+// Instantiate an Amazon S3 client.
+$s3 = new S3Client([
+    'version' => 'latest',
+    'region'  => 'us-west-2'
+]);
+```
 
-## Minimum Requirements in a nutshell
+### Upload a file to Amazon S3
 
-* You are at least an intermediate-level PHP developer and have a basic understanding of object-oriented PHP.
-* You have a valid AWS account, and you've already signed up for the services you want to use.
-* The PHP interpreter, version 5.2 or newer. PHP 5.2.17 or 5.3.x is highly recommended for use with the AWS SDK for PHP.
-* The cURL PHP extension (compiled with the [OpenSSL](http://openssl.org) libraries for HTTPS support).
-* The ability to read from and write to the file system via [file_get_contents()](http://php.net/file_get_contents) and [file_put_contents()](http://php.net/file_put_contents).
+```php
+<?php
+// Upload a publicly accessible file. The file size and type are determined by the SDK.
+try {
+    $s3->putObject([
+        'Bucket' => 'my-bucket',
+        'Key'    => 'my-object',
+        'Body'   => fopen('/path/to/file', 'r'),
+        'ACL'    => 'public-read',
+    ]);
+} catch (Aws\Exception\S3Exception $e) {
+    echo "There was an error uploading the file.\n";
+}
+```
 
-If you're not sure whether your PHP environment meets these requirements, run the
-[SDK Compatibility Test](http://github.com/amazonwebservices/aws-sdk-for-php/tree/master/_compatibility_test/) script
-included in the SDK download.
+### Related Projects
 
+* [AWS Service Provider for Laravel][mod-laravel]
+* [AWS SDK ZF2 Module][mod-zf2]
+* [AWS Service Provider for Silex][mod-silex]
+* [AWS SDK Bundle for Symfony][mod-symfony]
+* [Guzzle Version 6][guzzle-docs] – PHP HTTP client and framework
+* Other [AWS SDKs & Tools][aws-tools] (e.g., js, cli, ruby, python, java, etc.)
 
-## Installation
+[sdk-website]: http://aws.amazon.com/sdkforphp
+[sdk-forum]: https://forums.aws.amazon.com/forum.jspa?forumID=80
+[sdk-issues]: https://github.com/aws/aws-sdk-php/issues
+[sdk-license]: http://aws.amazon.com/apache2.0/
+[sdk-blog]: http://blogs.aws.amazon.com/php
+[sdk-twitter]: https://twitter.com/awsforphp
+[sdk-sample]: http://aws.amazon.com/developers/getting-started/php
 
-### Via GitHub
+[install-packagist]: https://packagist.org/packages/aws/aws-sdk-php
+[latest-release]: https://github.com/aws/aws-sdk-php/releases
 
-Amazon Web Services publishes releases of the AWS SDK for PHP to [GitHub](http://github.com/amazonwebservices),
-which is a hosted service for [Git](http://git-scm.com) repositories.
+[docs-api]: http://docs.aws.amazon.com/aws-sdk-php/v3/api/index.html
+[docs-guide]: http://docs.aws.amazon.com/aws-sdk-php/v3/guide/index.html
+[docs-api-v2]: http://docs.aws.amazon.com/aws-sdk-php/v2/api/index.html
+[docs-guide-v2]: http://docs.aws.amazon.com/aws-sdk-php/v2/guide/index.html
+[docs-contribution]: https://github.com/aws/aws-sdk-php/blob/master/CONTRIBUTING.md
+[docs-migration]: http://docs.aws.amazon.com/aws-sdk-php/v3/guide/guide/migration.html
+[docs-signup]: http://aws.amazon.com/developers/access-keys/
+[docs-requirements]: http://docs.aws.amazon.com/aws-sdk-php/v3/guide/getting-started/requirements.html
+[docs-installation]: http://docs.aws.amazon.com/aws-sdk-php/v3/guide/getting-started/installation.html
+[docs-quickstart]: http://docs.aws.amazon.com/aws-sdk-php/v3/guide/#getting-started
+[docs-paginators]: http://docs.aws.amazon.com/aws-sdk-php/v3/guide/guide/paginators.html
+[docs-waiters]: http://docs.aws.amazon.com/aws-sdk-php/v3/guide/guide/waiters.html
+[docs-results]: http://docs.aws.amazon.com/aws-sdk-php/v3/guide/getting-started/basic-usage.html#result-objects
+[docs-exceptions]: http://docs.aws.amazon.com/aws-sdk-php/v3/guide/quick-start.html#error-handling
+[docs-wire-logging]: http://docs.aws.amazon.com/aws-sdk-php/v3/guide/faq.html#how-can-i-see-what-data-is-sent-over-the-wire
+[docs-ddbsh]: http://docs.aws.amazon.com/aws-sdk-php/v3/guide/service/dynamodb-session-handler.html
+[docs-rande]: http://docs.aws.amazon.com/general/latest/gr/rande.html
+[docs-streamwrapper]: http://docs.aws.amazon.com/aws-sdk-php/v3/guide/service/s3-stream-wrapper.html
+[docs-s3-transfer]: http://docs.aws.amazon.com/aws-sdk-php/v3/guide/service/s3-transfer.html
+[docs-s3-multipart]: http://docs.aws.amazon.com/aws-sdk-php/v3/guide/service/s3-multipart-upload.html
 
-If you're unfamiliar with Git, there are a variety of resources on the net that will help you learn more:
+[aws]: http://aws.amazon.com
+[aws-iam-credentials]: http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/UsingIAM.html#UsingIAMrolesWithAmazonEC2Instances
+[aws-tools]: http://aws.amazon.com/tools
+[guzzle-docs]: http://guzzlephp.org
+[composer]: http://getcomposer.org
+[packagist]: http://packagist.org
+[psr-7]: https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-7-http-message.md
+[psr-4]: https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-4-autoloader.md
+[psr-1]: https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-1-basic-coding-standard.md
+[psr-2]: https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-2-coding-style-guide.md
 
-* [Everyday Git](http://www.kernel.org/pub/software/scm/git/docs/everyday.html) will teach you just enough
-  about Git to get by.
-* The [PeepCode screencast](https://peepcode.com/products/git) on Git ($9) is easier to follow.
-* [GitHub](http://github.com/guides/home) offers links to a variety of Git resources.
-* [Pro Git](http://progit.org/book/) is an entire book about Git with a Creative Commons license.
-* [Git for the lazy](http://www.spheredev.org/wiki/Git_for_the_lazy) is a great mini-reference to remind you
-  how to do things.
-* If you want to dig even further, I've bookmarked [other Git references](http://delicious.com/skyzyx/git).
-
-Here's how you would check out the source code from GitHub:
-
-	git clone git://github.com/amazonwebservices/aws-sdk-for-php.git AWSSDKforPHP
-	cd ./AWSSDKforPHP
-
-### Via PEAR
-
-Amazon Web Services also publishes releases of the AWS SDK for PHP to a self-hosted
-[PEAR repository](http://pear.amazonwebservices.com).
-
-If you're unfamiliar with how to install PEAR packages, check out
-[Command line installer](http://pear.php.net/manual/en/guide.users.commandline.cli.php) in the PEAR user guide.
-
-	sudo pear channel-discover pear.amazonwebservices.com
-	sudo pear install aws/sdk
-
-### Configuration
-
-1. Copy the contents of [config-sample.inc.php](https://github.com/amazonwebservices/aws-sdk-for-php/raw/master/config-sample.inc.php)
-   and add your credentials as instructed in the file.
-2. Move your file to `~/.aws/sdk/config.inc.php`.
-3. Make sure that `getenv('HOME')` points to your user directory. If not you'll need to set
-   `putenv('HOME=<your-user-directory>')`.
-
-
-## Additional Information
-
-* AWS SDK for PHP: <http://aws.amazon.com/sdkforphp>
-* PHP Developer Center: <http://aws.amazon.com/php>
-* Documentation: <http://docs.amazonwebservices.com/AWSSDKforPHP/latest/>
-* License: <http://aws.amazon.com/apache2.0/>
-* Discuss: <http://aws.amazon.com/forums>
+[mod-laravel]: https://github.com/aws/aws-sdk-php-laravel
+[mod-zf2]: https://github.com/aws/aws-sdk-php-zf2
+[mod-silex]: https://github.com/aws/aws-sdk-php-silex
+[mod-symfony]: https://github.com/aws/aws-sdk-php-symfony
