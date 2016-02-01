@@ -247,6 +247,11 @@ class config {
                 'static*' => 'static',
                 'admin/*' => 'uncached',
         ];
+
+		static $img_s3_id = '';
+		static $img_s3_secret = '';
+		static $img_s3_bucket = '';
+		static $img_s3_prefix = '';
 }
 
 // make sure that if this file exists, you dont add it to bzr.
