@@ -12,12 +12,25 @@ class s3img {
 		}
 	}
 
-	private static function full_path($path_part) {
+	static function full_path($path_part) {
 		return config::$img_s3_prefix . 'img/' . $path_part;
 	}
 
-	private static function gen_name() {
-		return uniqid(); // XXX something better
+	static function gen_name($num_chars = 12) {
+		$digits = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_";
+		$dlen = strlen($digits);
+		$name = '';
+		$r = 0;
+		$max_rand = mt_getrandmax();
+		while (strlen($name) < $num_chars) {
+			if ($r == 0) {
+				$r = mt_rand(0, $max_rand);
+			}
+			$n = $r % $dlen;
+			$r = ($r - $n) / $dlen;
+			$name .= substr($digits, $n, 1);
+		}
+		return $name;
 	}
 
 	static function put($file, $name = null) {
@@ -36,7 +49,8 @@ class s3img {
 
 		while (!$name) {
 			$prov_name = self::gen_name() .'.'. $extensions[$img_type];
-			if (1) { // check if avalivable
+			$prov_object_key = self::full_path($prov_name);
+			if (!self::$s3_instance->object_exists($prov_object_key)) { // check if avalivable
 				$name = $prov_name;
 			}
 		}

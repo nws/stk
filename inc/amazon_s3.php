@@ -39,6 +39,18 @@ class amazon_s3 {
 		return 'https://s3.amazonaws.com/'.$this->bucket.'/'.$filename;
 	}
 
+	function object_exists($filename) {
+		$opt = [
+			'Bucket' => $this->bucket,
+			'Key' => $filename,
+		];
+		try {
+			$res = $this->s3->headObject($opt);
+		} catch (Exception $e) {
+			return false;
+		}
+		return true;
+	}
 	
 	function delete_object($filename, $opt = null) { // THIS NEEDS UPDATE XXX
 		return $this->s3->delete_object($this->bucket, $filename, $opt);
