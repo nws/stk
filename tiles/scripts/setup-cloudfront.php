@@ -97,10 +97,10 @@ function cloudfront_setup() {
 	$tmp_h = fopen($config_tmp_file, 'w');
 	fwrite($tmp_h, json_encode($distribution_setup));
 	fclose($tmp_h);
-	echo $config_tmp_file, "\n";
 	
 	$update_opts = "cloudfront update-distribution --id $distribution_id --distribution-config file://$config_tmp_file --if-match $etag";
 	$update_command = "$aws_tool_cmd $update_opts";
+	
 	echo "doing: $update_command\n";
 	system($update_command);
 	unlink($config_tmp_file);
