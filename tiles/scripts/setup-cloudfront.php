@@ -40,6 +40,33 @@ function gen_cache_behaviour($path, $origin_id, $cached_methods, $allowed_method
 	return $ret;
 }
 
+function find_default_origin($origins) {
+	foreach ($origins as $o) {
+		if (isset($o['CustomOriginConfig'])) {
+			return $o['Id'];
+		}
+	}
+}
+
+function find_s3img_origin($origins) {
+	var_dump($origins);
+	if (empty(config::$img_s3_bucket) || !isset(config::$img_s3_prefix)) { return null; }
+	var_dump('ok things set');
+	$target_domain = config::$img_s3_bucket;
+	$target_path = config::$img_s3_prefix;
+
+	foreach ($origins as $o) {
+		if (isset($o['S3OriginConfig'])) {
+			var_dump($o['OriginPath'].'/', '/'.$target_path,  $o['DomainName'], $target_domain.'.s3.amazonaws.com');
+			var_dump ($o['OriginPath'].'/' == '/'.$target_path, $o['DomainName'] == $target_domain.'.s3.amazonaws.com');
+			if ($o['OriginPath'].'/' == '/'.$target_path && $o['DomainName'] == $target_domain.'.s3.amazonaws.com') {
+				return $o['Id'];
+			}
+		}
+	}
+}
+
+
 function cloudfront_setup() {
 	$user = config::$cloudfront_api_user;
 	$secret = config::$cloudfront_api_secret;
@@ -66,7 +93,12 @@ function cloudfront_setup() {
 		stk_exit(-1);
 	}
 
+
 	$origin_id = $distribution_setup['Origins']['Items'][0]['Id'];
+	$origin_id = find_default_origin($distribution_setup['Origins']['Items']);
+	$s3img_origin_id = find_s3img_origin($distribution_setup['Origins']['Items']);
+	// XXX if not found but set up actually push the origin
+
 	echo "using $origin_id as origin for rules.\n";
 
 	$defs = config::$cache_kinds[config::$cache_default_kind];
@@ -91,6 +123,18 @@ function cloudfront_setup() {
 				$defs['query_string']);
 
 	}
+
+	if ($s3img_origin_id) {
+		$defs = config::$cache_kinds['static'];
+		$behaviors[] = gen_cache_behaviour('/img/*', $s3img_origin_id, 
+				$defs['cached_methods'], 
+				$defs['allowed_methods'], 
+				$defs['ttl'], 
+				$defs['headers'], 
+				$defs['cookies'], 
+				$defs['query_string']);
+	}
+
 	$distribution_setup['CacheBehaviors'] = make_aws_api_array($behaviors);
 	
 	$config_tmp_file = tempnam(config::$tempdir, 'CF-config-');
