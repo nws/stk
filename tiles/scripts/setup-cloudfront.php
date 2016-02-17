@@ -49,16 +49,12 @@ function find_default_origin($origins) {
 }
 
 function find_s3img_origin($origins) {
-	var_dump($origins);
 	if (empty(config::$img_s3_bucket) || !isset(config::$img_s3_prefix)) { return null; }
-	var_dump('ok things set');
 	$target_domain = config::$img_s3_bucket;
 	$target_path = config::$img_s3_prefix;
 
 	foreach ($origins as $o) {
 		if (isset($o['S3OriginConfig'])) {
-			var_dump($o['OriginPath'].'/', '/'.$target_path,  $o['DomainName'], $target_domain.'.s3.amazonaws.com');
-			var_dump ($o['OriginPath'].'/' == '/'.$target_path, $o['DomainName'] == $target_domain.'.s3.amazonaws.com');
 			if ($o['OriginPath'].'/' == '/'.$target_path && $o['DomainName'] == $target_domain.'.s3.amazonaws.com') {
 				return $o['Id'];
 			}
@@ -97,9 +93,30 @@ function cloudfront_setup() {
 	$origin_id = $distribution_setup['Origins']['Items'][0]['Id'];
 	$origin_id = find_default_origin($distribution_setup['Origins']['Items']);
 	$s3img_origin_id = find_s3img_origin($distribution_setup['Origins']['Items']);
-	// XXX if not found but set up actually push the origin
+		
+	if (!$s3img_origin_id && !empty(config::$img_s3_bucket) && isset(config::$img_s3_prefix)) {
+		echo "s3 origin for img not found, making one\n";
+		$prefix = trim(config::$img_s3_prefix, '/');
+		$id = 'S3-'.config::$img_s3_bucket.'/' . $prefix;
+
+		$s3_origin = [
+                        "S3OriginConfig" => [
+                            "OriginAccessIdentity" => ""
+                        ],
+                        "OriginPath" => '/'.$prefix, 
+                        "CustomHeaders" => make_aws_api_array([]),
+			"Id" => $id,
+                        "DomainName"=> config::$img_s3_bucket . ".s3.amazonaws.com",
+		];
+		$old_origins = $distribution_setup['Origins']['Items'];
+		$new_origins = $old_origins;
+		$new_origins[] = $s3_origin;
+		$distribution_setup['Origins'] = make_aws_api_array($new_origins);
+		$s3img_origin_id = $id;
+	}
 
 	echo "using $origin_id as origin for rules.\n";
+	echo "s3origin: $s3img_origin_id\n";
 
 	$defs = config::$cache_kinds[config::$cache_default_kind];
 	$distribution_setup['DefaultCacheBehavior'] = 
@@ -125,7 +142,7 @@ function cloudfront_setup() {
 	}
 
 	if ($s3img_origin_id) {
-		$defs = config::$cache_kinds['static'];
+		$defs = config::$cache_kinds['static_s3'];
 		$behaviors[] = gen_cache_behaviour('/img/*', $s3img_origin_id, 
 				$defs['cached_methods'], 
 				$defs['allowed_methods'], 

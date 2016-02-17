@@ -224,6 +224,14 @@ class config {
                         'cookies' => false,
                         'query_string' => false,
                 ],
+                'static_s3' => [
+                        'cached_methods' => ['GET', 'HEAD'],
+                        'allowed_methods' => ['HEAD', 'GET'],
+                        'ttl' => 7200,
+                        'headers' => [],
+                        'cookies' => false,
+                        'query_string' => false,
+                ],
                 'cached_dynamic' => [
                         'cached_methods' => ['GET', 'HEAD'],
                         'allowed_methods' => ['HEAD', 'DELETE', 'POST', 'GET', 'OPTIONS', 'PUT', 'PATCH'],
